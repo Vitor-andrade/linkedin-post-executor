@@ -157,8 +157,8 @@ componentes, fluxo de dados, deployment) e registros de decisão, veja
 
 O projeto evolui em fatias verticais — cada uma entrega valor de ponta a ponta.
 
-- [ ] **Fundação** — scaffold Go + Vite + SQLite, CI/CD, base do projeto.
-- [ ] **Fatia 1 — Gerar** — informar tema → IA (Ollama) gera → revisar/editar → salvar rascunho.
+- [x] **Fundação** — scaffold Go + Vite + SQLite, CI/CD, base do projeto.
+- [ ] **Fatia 1 — Gerar** — informar tema → IA (Ollama) gera → revisar/editar → salvar rascunho. _(API e UI base prontas; falta persistir o rascunho gerado)_
 - [ ] **Fatia 2 — Publicar** — OAuth do LinkedIn + publicação imediata no próprio perfil.
 - [ ] **Fatia 3 — Agendar** — agendamento com o scheduler em segundo plano.
 - [ ] **Refino** — suporte a chave própria (Claude/OpenAI), métricas locais, melhorias de UX.
@@ -166,17 +166,81 @@ O projeto evolui em fatias verticais — cada uma entrega valor de ponta a ponta
 
 ---
 
-## 🚀 Começando
+## 🚀 Rodando localmente
 
-> ⚠️ O projeto está em construção. As instruções de instalação e execução serão preenchidas
-> conforme as primeiras fatias forem entregues.
+### Pré-requisitos
 
-Pré-requisitos previstos para rodar localmente:
+| Ferramenta | Para quê | Obrigatório? |
+|---|---|---|
+| [Go](https://go.dev/) 1.25+ | Compilar o binário | ✅ |
+| [Node.js](https://nodejs.org/) 22+ e npm | Compilar a UI | ✅ |
+| [Ollama](https://ollama.com/) | IA local gratuita (geração de conteúdo) | Opcional¹ |
+| App no [LinkedIn Developers](https://developer.linkedin.com/) | Publicar no seu perfil | Opcional² |
 
-- [Go](https://go.dev/) (build do binário)
-- [Ollama](https://ollama.com/) instalado localmente para a IA gratuita _(opcional se usar chave própria)_
-- Um app registrado no [LinkedIn Developers](https://developer.linkedin.com/) com o produto
-  _"Share on LinkedIn"_ habilitado _(necessário apenas para publicar)_
+> ¹ Necessário apenas para gerar conteúdo com IA local. Alternativamente, traga sua própria
+> chave (Claude/OpenAI) — _em desenvolvimento_.
+> ² Necessário apenas para a publicação automática — _em desenvolvimento_.
+
+### Opção A — binário único (produção)
+
+Compila a UI, embute no binário Go e executa tudo em um único processo:
+
+```bash
+make build      # gera a UI e compila o binário "linkedin-post-executor"
+make run        # sobe em http://localhost:8080
+```
+
+Depois é só abrir **http://localhost:8080** no navegador.
+
+### Opção B — modo desenvolvimento (hot reload)
+
+Sobe a API Go e a UI do Vite em processos separados (a UI faz _proxy_ de `/api` para a API):
+
+```bash
+# terminal 1 — API Go (porta 8080)
+make dev-api
+
+# terminal 2 — UI Vite com hot reload (porta 5173)
+make dev-ui
+```
+
+Acesse **http://localhost:5173**.
+
+### IA local com Ollama (opcional)
+
+Para a geração de conteúdo funcionar com o provedor padrão (custo zero):
+
+```bash
+# instale o Ollama (https://ollama.com) e baixe um modelo
+ollama pull llama3.1
+```
+
+O app conversa com o Ollama em `http://localhost:11434` por padrão.
+
+### Configuração
+
+Todas as variáveis têm valor padrão; copie `.env.example` para `.env` apenas se quiser ajustar:
+
+```bash
+cp .env.example .env
+```
+
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `LPE_ADDR` | `:8080` | Endereço HTTP local |
+| `LPE_DB` | `data.db` | Caminho do arquivo SQLite |
+| `LPE_AI_PROVIDER` | `ollama` | Provedor de IA |
+| `LPE_OLLAMA_URL` | `http://localhost:11434` | URL do Ollama |
+| `LPE_OLLAMA_MODEL` | `llama3.1` | Modelo do Ollama |
+
+### Comandos úteis
+
+```bash
+make help     # lista todos os comandos disponíveis
+make test     # roda os testes Go
+make lint     # go vet + checagem de tipos da UI
+make clean    # remove binário e banco local
+```
 
 ---
 

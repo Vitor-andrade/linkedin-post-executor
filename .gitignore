@@ -1,0 +1,19 @@
+# Go binary
+/linkedin-post-executor
+/lpe
+
+# Local database
+*.db
+*.db-shm
+*.db-wal
+
+# Environment
+.env
+
+# Node
+web/node_modules/
+web/*.tsbuildinfo
+
+# Vite build output (a placeholder web/dist/index.html is kept in git so the
+# Go binary always compiles; real build artifacts are generated locally).
+web/dist/assets/
