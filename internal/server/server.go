@@ -27,6 +27,8 @@ func New(d Deps) http.Handler {
 	mux.HandleFunc("POST /api/generate", handleGenerate(d))
 	mux.HandleFunc("GET /api/drafts", handleListDrafts(d))
 	mux.HandleFunc("POST /api/drafts", handleCreateDraft(d))
+	mux.HandleFunc("GET /api/drafts/{id}", handleGetDraft(d))
+	mux.HandleFunc("PUT /api/drafts/{id}", handleUpdateDraft(d))
 
 	// Anything not under /api is served by the SPA.
 	mux.Handle("/", spaHandler(d.UI))

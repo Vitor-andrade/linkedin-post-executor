@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -43,11 +44,35 @@ func (s *Store) GetDraft(ctx context.Context, id int64) (Draft, error) {
 	return d, err
 }
 
+// UpdateDraft overwrites an existing draft's editable fields and bumps
+// updated_at. It returns the refreshed draft, or sql.ErrNoRows if id is unknown.
+func (s *Store) UpdateDraft(ctx context.Context, id int64, d Draft) (Draft, error) {
+	res, err := s.db.ExecContext(ctx,
+		`UPDATE drafts
+		 SET title = ?, source_description = ?, content = ?,
+		     status = COALESCE(NULLIF(?, ''), status),
+		     updated_at = CURRENT_TIMESTAMP
+		 WHERE id = ?`,
+		d.Title, d.SourceDescription, d.Content, d.Status, id,
+	)
+	if err != nil {
+		return Draft{}, err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return Draft{}, err
+	}
+	if n == 0 {
+		return Draft{}, sql.ErrNoRows
+	}
+	return s.GetDraft(ctx, id)
+}
+
 // ListDrafts returns all drafts, newest first.
 func (s *Store) ListDrafts(ctx context.Context) ([]Draft, error) {
 	rows, err := s.db.QueryContext(ctx,
 		`SELECT id, title, source_description, content, status, created_at, updated_at
-		 FROM drafts ORDER BY created_at DESC`)
+		 FROM drafts ORDER BY created_at DESC, id DESC`)
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,18 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Health {
   status: string;
   aiProvider: string;
+}
+
+interface Draft {
+  id: number;
+  title: string;
+  sourceDescription: string;
+  content: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function App() {
@@ -11,14 +21,28 @@ export default function App() {
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const loadDrafts = useCallback(async () => {
+    try {
+      const res = await fetch("/api/drafts");
+      if (!res.ok) return;
+      setDrafts(await res.json());
+    } catch {
+      /* listing is best-effort; ignore */
+    }
+  }, []);
 
   useEffect(() => {
     fetch("/api/health")
       .then((r) => r.json())
       .then(setHealth)
       .catch(() => setHealth(null));
-  }, []);
+    void loadDrafts();
+  }, [loadDrafts]);
 
   async function generate(e: React.FormEvent) {
     e.preventDefault();
@@ -40,6 +64,49 @@ export default function App() {
     }
   }
 
+  async function saveDraft() {
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch(
+        editingId ? `/api/drafts/${editingId}` : "/api/drafts",
+        {
+          method: editingId ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title,
+            sourceDescription: description,
+            content,
+          }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to save draft");
+      setEditingId(data.id);
+      await loadDrafts();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function loadDraft(d: Draft) {
+    setTitle(d.title);
+    setDescription(d.sourceDescription);
+    setContent(d.content);
+    setEditingId(d.id);
+    setError("");
+  }
+
+  function newDraft() {
+    setTitle("");
+    setDescription("");
+    setContent("");
+    setEditingId(null);
+    setError("");
+  }
+
   return (
     <main className="container">
       <header>
@@ -48,6 +115,15 @@ export default function App() {
           {health ? `online · AI: ${health.aiProvider}` : "backend offline"}
         </span>
       </header>
+
+      {editingId && (
+        <p className="editing">
+          Editing draft #{editingId}{" "}
+          <button className="link" onClick={newDraft}>
+            start a new one
+          </button>
+        </p>
+      )}
 
       <form onSubmit={generate} className="card">
         <label>
@@ -76,13 +152,37 @@ export default function App() {
 
       {content && (
         <section className="card">
-          <h2>Generated draft</h2>
+          <div className="section-head">
+            <h2>Generated draft</h2>
+            <span className="count">{content.length} chars</span>
+          </div>
           <textarea
             className="output"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={16}
           />
+          <button onClick={saveDraft} disabled={saving || !title.trim()}>
+            {saving ? "Saving..." : editingId ? "Update draft" : "Save draft"}
+          </button>
+        </section>
+      )}
+
+      {drafts.length > 0 && (
+        <section className="card">
+          <h2>Saved drafts</h2>
+          <ul className="drafts">
+            {drafts.map((d) => (
+              <li key={d.id}>
+                <button className="link" onClick={() => loadDraft(d)}>
+                  {d.title || "(untitled)"}
+                </button>
+                <span className="meta">
+                  {new Date(d.createdAt).toLocaleString()} · {d.status}
+                </span>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
     </main>

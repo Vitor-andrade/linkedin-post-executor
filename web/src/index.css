@@ -123,3 +123,73 @@ button:disabled {
   font-size: 0.85rem;
   margin: 0;
 }
+
+.editing {
+  font-size: 0.8rem;
+  margin: -0.5rem 0 1rem;
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.editing button.link {
+  font-size: inherit;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.section-head h2 {
+  margin: 0;
+}
+
+.count {
+  font-size: 0.75rem;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+h2 {
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+}
+
+.drafts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.drafts li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.drafts li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+button.link {
+  align-self: flex-start;
+  background: none;
+  color: var(--accent);
+  padding: 0;
+  font-weight: 600;
+  text-align: left;
+}
+
+.meta {
+  font-size: 0.75rem;
+  color: var(--text);
+  opacity: 0.6;
+}
