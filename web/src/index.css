@@ -124,6 +124,46 @@ button:disabled {
   margin: 0;
 }
 
+.linkedin {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.connect {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+}
+
+.notice {
+  font-size: 0.85rem;
+  color: #1a7f37;
+  margin: 0 0 1rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+button.secondary:disabled {
+  color: var(--border);
+  border-color: var(--border);
+}
+
 .editing {
   font-size: 0.8rem;
   margin: -0.5rem 0 1rem;

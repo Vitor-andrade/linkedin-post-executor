@@ -8,14 +8,16 @@ import (
 	"net/http"
 
 	"github.com/Vitor-andrade/linkedin-post-executor/internal/ai"
+	"github.com/Vitor-andrade/linkedin-post-executor/internal/linkedin"
 	"github.com/Vitor-andrade/linkedin-post-executor/internal/store"
 )
 
 // Deps holds the collaborators the server needs.
 type Deps struct {
-	Store *store.Store
-	AI    ai.Provider
-	UI    fs.FS
+	Store    *store.Store
+	AI       ai.Provider
+	LinkedIn *linkedin.Service
+	UI       fs.FS
 }
 
 // New builds the root http.Handler: JSON API under /api and the SPA UI for
@@ -29,6 +31,12 @@ func New(d Deps) http.Handler {
 	mux.HandleFunc("POST /api/drafts", handleCreateDraft(d))
 	mux.HandleFunc("GET /api/drafts/{id}", handleGetDraft(d))
 	mux.HandleFunc("PUT /api/drafts/{id}", handleUpdateDraft(d))
+
+	mux.HandleFunc("GET /api/linkedin/status", handleLinkedInStatus(d))
+	mux.HandleFunc("GET /api/linkedin/login", handleLinkedInLogin(d))
+	mux.HandleFunc("GET /api/linkedin/callback", handleLinkedInCallback(d))
+	mux.HandleFunc("POST /api/linkedin/publish", handleLinkedInPublish(d))
+	mux.HandleFunc("POST /api/linkedin/disconnect", handleLinkedInDisconnect(d))
 
 	// Anything not under /api is served by the SPA.
 	mux.Handle("/", spaHandler(d.UI))

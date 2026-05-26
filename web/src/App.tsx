@@ -15,6 +15,12 @@ interface Draft {
   updatedAt: string;
 }
 
+interface LinkedInStatus {
+  configured: boolean;
+  connected: boolean;
+  expiresAt?: string;
+}
+
 export default function App() {
   const [health, setHealth] = useState<Health | null>(null);
   const [title, setTitle] = useState("");
@@ -22,9 +28,12 @@ export default function App() {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [linkedin, setLinkedin] = useState<LinkedInStatus | null>(null);
 
   const loadDrafts = useCallback(async () => {
     try {
@@ -36,13 +45,31 @@ export default function App() {
     }
   }, []);
 
+  const loadLinkedIn = useCallback(async () => {
+    try {
+      const res = await fetch("/api/linkedin/status");
+      if (!res.ok) return;
+      setLinkedin(await res.json());
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   useEffect(() => {
     fetch("/api/health")
       .then((r) => r.json())
       .then(setHealth)
       .catch(() => setHealth(null));
     void loadDrafts();
-  }, [loadDrafts]);
+    void loadLinkedIn();
+
+    // Surface the result of the OAuth callback redirect, then clean the URL.
+    const params = new URLSearchParams(window.location.search);
+    const li = params.get("linkedin");
+    if (li === "connected") setNotice("LinkedIn connected ✅");
+    else if (li === "error") setError("LinkedIn connection failed. Please try again.");
+    if (li) window.history.replaceState({}, "", window.location.pathname);
+  }, [loadDrafts, loadLinkedIn]);
 
   async function generate(e: React.FormEvent) {
     e.preventDefault();
@@ -91,6 +118,33 @@ export default function App() {
     }
   }
 
+  async function publishNow() {
+    setPublishing(true);
+    setError("");
+    setNotice("");
+    try {
+      const res = await fetch("/api/linkedin/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content, draftId: editingId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to publish");
+      setNotice(`Published to LinkedIn ✅ (${data.urn})`);
+      await loadDrafts();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setPublishing(false);
+    }
+  }
+
+  async function disconnect() {
+    await fetch("/api/linkedin/disconnect", { method: "POST" });
+    setNotice("LinkedIn disconnected");
+    await loadLinkedIn();
+  }
+
   function loadDraft(d: Draft) {
     setTitle(d.title);
     setDescription(d.sourceDescription);
@@ -115,6 +169,30 @@ export default function App() {
           {health ? `online · AI: ${health.aiProvider}` : "backend offline"}
         </span>
       </header>
+
+      <section className="linkedin">
+        {linkedin?.connected ? (
+          <>
+            <span className="badge ok">LinkedIn connected</span>
+            <button className="link" onClick={disconnect}>
+              disconnect
+            </button>
+          </>
+        ) : linkedin?.configured ? (
+          <>
+            <span className="badge down">LinkedIn not connected</span>
+            <a className="connect" href="/api/linkedin/login">
+              Connect LinkedIn
+            </a>
+          </>
+        ) : (
+          <span className="meta">
+            LinkedIn publishing disabled — set LPE_LINKEDIN_CLIENT_ID/SECRET to enable.
+          </span>
+        )}
+      </section>
+
+      {notice && <p className="notice">{notice}</p>}
 
       {editingId && (
         <p className="editing">
@@ -162,9 +240,23 @@ export default function App() {
             onChange={(e) => setContent(e.target.value)}
             rows={16}
           />
-          <button onClick={saveDraft} disabled={saving || !title.trim()}>
-            {saving ? "Saving..." : editingId ? "Update draft" : "Save draft"}
-          </button>
+          <div className="actions">
+            <button onClick={saveDraft} disabled={saving || !title.trim()}>
+              {saving ? "Saving..." : editingId ? "Update draft" : "Save draft"}
+            </button>
+            <button
+              className="secondary"
+              onClick={publishNow}
+              disabled={publishing || !linkedin?.connected || !content.trim()}
+              title={
+                linkedin?.connected
+                  ? "Publish this post to your LinkedIn profile now"
+                  : "Connect LinkedIn first"
+              }
+            >
+              {publishing ? "Publishing..." : "Publish to LinkedIn"}
+            </button>
+          </div>
         </section>
       )}
 

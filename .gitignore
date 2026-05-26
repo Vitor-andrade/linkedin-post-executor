@@ -10,6 +10,9 @@
 # Environment
 .env
 
+# Local encryption key (auto-generated)
+*.key
+
 # Node
 web/node_modules/
 web/*.tsbuildinfo

@@ -68,6 +68,16 @@ func (s *Store) UpdateDraft(ctx context.Context, id int64, d Draft) (Draft, erro
 	return s.GetDraft(ctx, id)
 }
 
+// SetDraftStatus updates only the lifecycle status of a draft (e.g. marking it
+// "published" after a successful LinkedIn post).
+func (s *Store) SetDraftStatus(ctx context.Context, id int64, status string) error {
+	_, err := s.db.ExecContext(ctx,
+		`UPDATE drafts SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+		status, id,
+	)
+	return err
+}
+
 // ListDrafts returns all drafts, newest first.
 func (s *Store) ListDrafts(ctx context.Context) ([]Draft, error) {
 	rows, err := s.db.QueryContext(ctx,
