@@ -21,6 +21,17 @@ interface LinkedInStatus {
   expiresAt?: string;
 }
 
+interface ScheduledPost {
+  id: number;
+  draftId: number | null;
+  content: string;
+  scheduledFor: string;
+  status: string;
+  linkedinUrn: string;
+  error: string;
+  createdAt: string;
+}
+
 export default function App() {
   const [health, setHealth] = useState<Health | null>(null);
   const [title, setTitle] = useState("");
@@ -34,6 +45,9 @@ export default function App() {
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [linkedin, setLinkedin] = useState<LinkedInStatus | null>(null);
+  const [scheduledFor, setScheduledFor] = useState("");
+  const [scheduling, setScheduling] = useState(false);
+  const [scheduled, setScheduled] = useState<ScheduledPost[]>([]);
 
   const loadDrafts = useCallback(async () => {
     try {
@@ -55,6 +69,16 @@ export default function App() {
     }
   }, []);
 
+  const loadScheduled = useCallback(async () => {
+    try {
+      const res = await fetch("/api/schedule");
+      if (!res.ok) return;
+      setScheduled(await res.json());
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   useEffect(() => {
     fetch("/api/health")
       .then((r) => r.json())
@@ -62,6 +86,7 @@ export default function App() {
       .catch(() => setHealth(null));
     void loadDrafts();
     void loadLinkedIn();
+    void loadScheduled();
 
     // Surface the result of the OAuth callback redirect, then clean the URL.
     const params = new URLSearchParams(window.location.search);
@@ -69,7 +94,7 @@ export default function App() {
     if (li === "connected") setNotice("LinkedIn connected ✅");
     else if (li === "error") setError("LinkedIn connection failed. Please try again.");
     if (li) window.history.replaceState({}, "", window.location.pathname);
-  }, [loadDrafts, loadLinkedIn]);
+  }, [loadDrafts, loadLinkedIn, loadScheduled]);
 
   async function generate(e: React.FormEvent) {
     e.preventDefault();
@@ -137,6 +162,42 @@ export default function App() {
     } finally {
       setPublishing(false);
     }
+  }
+
+  async function schedulePost() {
+    if (!scheduledFor) {
+      setError("Pick a date and time to schedule.");
+      return;
+    }
+    setScheduling(true);
+    setError("");
+    setNotice("");
+    try {
+      const res = await fetch("/api/schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content,
+          draftId: editingId,
+          // datetime-local is local time; send an absolute (UTC) instant.
+          scheduledFor: new Date(scheduledFor).toISOString(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to schedule");
+      setNotice(`Scheduled for ${new Date(data.scheduledFor).toLocaleString()}`);
+      setScheduledFor("");
+      await loadScheduled();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setScheduling(false);
+    }
+  }
+
+  async function cancelScheduled(id: number) {
+    await fetch(`/api/schedule/${id}`, { method: "DELETE" });
+    await loadScheduled();
   }
 
   async function disconnect() {
@@ -257,6 +318,46 @@ export default function App() {
               {publishing ? "Publishing..." : "Publish to LinkedIn"}
             </button>
           </div>
+          <div className="schedule-row">
+            <input
+              type="datetime-local"
+              value={scheduledFor}
+              onChange={(e) => setScheduledFor(e.target.value)}
+            />
+            <button
+              className="secondary"
+              onClick={schedulePost}
+              disabled={scheduling || !content.trim() || !scheduledFor}
+            >
+              {scheduling ? "Scheduling..." : "Schedule"}
+            </button>
+          </div>
+        </section>
+      )}
+
+      {scheduled.length > 0 && (
+        <section className="card">
+          <h2>Scheduled posts</h2>
+          <ul className="drafts">
+            {scheduled.map((p) => (
+              <li key={p.id}>
+                <span className="sched-line">
+                  <strong>{new Date(p.scheduledFor).toLocaleString()}</strong>
+                  <span className={`pill ${p.status}`}>{p.status}</span>
+                  {p.status === "pending" && (
+                    <button className="link" onClick={() => cancelScheduled(p.id)}>
+                      cancel
+                    </button>
+                  )}
+                </span>
+                <span className="meta">
+                  {p.content.slice(0, 80)}
+                  {p.content.length > 80 ? "…" : ""}
+                </span>
+                {p.error && <span className="error">{p.error}</span>}
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

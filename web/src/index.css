@@ -164,6 +164,44 @@ button.secondary:disabled {
   border-color: var(--border);
 }
 
+.schedule-row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.sched-line {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.pill {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.pill.pending {
+  color: #9a6700;
+  border-color: #9a6700;
+}
+
+.pill.published {
+  color: #1a7f37;
+  border-color: #1a7f37;
+}
+
+.pill.failed {
+  color: #cf222e;
+  border-color: #cf222e;
+}
+
 .editing {
   font-size: 0.8rem;
   margin: -0.5rem 0 1rem;

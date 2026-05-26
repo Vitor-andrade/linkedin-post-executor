@@ -38,6 +38,10 @@ func New(d Deps) http.Handler {
 	mux.HandleFunc("POST /api/linkedin/publish", handleLinkedInPublish(d))
 	mux.HandleFunc("POST /api/linkedin/disconnect", handleLinkedInDisconnect(d))
 
+	mux.HandleFunc("GET /api/schedule", handleListScheduled(d))
+	mux.HandleFunc("POST /api/schedule", handleCreateScheduled(d))
+	mux.HandleFunc("DELETE /api/schedule/{id}", handleCancelScheduled(d))
+
 	// Anything not under /api is served by the SPA.
 	mux.Handle("/", spaHandler(d.UI))
 

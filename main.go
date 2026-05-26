@@ -51,7 +51,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	scheduler := schedule.New(st)
+	scheduler := schedule.New(st, li)
 	scheduler.Start(ctx)
 
 	handler := server.New(server.Deps{
