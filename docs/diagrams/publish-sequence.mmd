@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor U as Usuário
+    participant UI as UI (React)
+    participant API as API (Go)
+    participant DB as SQLite
+    participant SCH as Scheduler
+    participant LI as API LinkedIn
+
+    Note over U,LI: Publicação agendada
+    U->>UI: Define post + data/hora
+    UI->>API: POST /api/schedule
+    API->>DB: grava scheduled_post (status=pending)
+    API-->>UI: 201 Created
+
+    loop a cada tick
+        SCH->>DB: busca posts vencidos (pending)
+        DB-->>SCH: post(s) due
+        SCH->>DB: lê + descriptografa token OAuth
+        alt token expirado
+            SCH->>LI: refresh token
+            LI-->>SCH: novo access token
+            SCH->>DB: grava token atualizado
+        end
+        SCH->>LI: POST /ugcPosts (w_member_social)
+        LI-->>SCH: 201 + URN do post
+        SCH->>DB: status=published, salva URN
+    end

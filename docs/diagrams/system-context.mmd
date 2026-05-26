@@ -1,0 +1,22 @@
+graph TD
+    user([Desenvolvedor<br/>dono da instância])
+    subgraph local["Máquina local do usuário"]
+        app["LinkedIn Post Executor<br/>(binário único Go)"]
+        ollama["Ollama<br/>(LLM local — padrão)"]
+        db[("SQLite<br/>data.db")]
+    end
+    llmapi["API de LLM externa<br/>(Claude / OpenAI — opcional, BYO key)"]
+    linkedin["API do LinkedIn<br/>(Share on LinkedIn)"]
+
+    user -->|"abre localhost,<br/>escreve, agenda"| app
+    app -->|"gera conteúdo (padrão)"| ollama
+    app -.->|"gera conteúdo (opcional, BYO key)"| llmapi
+    app -->|"lê/grava rascunhos,<br/>agendamentos, tokens"| db
+    app -->|"publica no próprio perfil<br/>OAuth w_member_social"| linkedin
+
+    classDef ext fill:#ffe0b2,stroke:#e65100;
+    classDef int fill:#bbdefb,stroke:#0d47a1;
+    classDef store fill:#c8e6c9,stroke:#1b5e20;
+    class llmapi,linkedin ext;
+    class app,ollama int;
+    class db store;

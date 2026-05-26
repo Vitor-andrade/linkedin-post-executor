@@ -1,0 +1,42 @@
+erDiagram
+    DRAFTS ||--o{ DRAFT_VERSIONS : "tem"
+    DRAFTS ||--o| SCHEDULED_POSTS : "pode gerar"
+
+    DRAFTS {
+        int id PK
+        string title
+        string source_description
+        string content
+        string status
+        datetime created_at
+        datetime updated_at
+    }
+    DRAFT_VERSIONS {
+        int id PK
+        int draft_id FK
+        string content
+        string generated_by
+        datetime created_at
+    }
+    SCHEDULED_POSTS {
+        int id PK
+        int draft_id FK
+        string content
+        datetime scheduled_for
+        string status
+        string linkedin_urn
+        string error
+        datetime created_at
+    }
+    OAUTH_TOKENS {
+        int id PK
+        string provider
+        blob access_token_enc
+        blob refresh_token_enc
+        datetime expires_at
+        datetime updated_at
+    }
+    SETTINGS {
+        string key PK
+        string value
+    }

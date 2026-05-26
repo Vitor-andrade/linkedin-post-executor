@@ -1,0 +1,15 @@
+flowchart LR
+    A["Usuário informa<br/>título + descrição"] --> B["/api/generate"]
+    B --> C{Provedor<br/>de IA}
+    C -->|padrão| D["Ollama (local)"]
+    C -->|BYO key| E["Claude / OpenAI"]
+    D --> F["Post formatado<br/>(Unicode, hook, CTA, hashtags)"]
+    E --> F
+    F --> G["Usuário revisa/edita"]
+    G --> H["Salva rascunho<br/>(SQLite)"]
+    H --> I{Ação}
+    I -->|Publicar agora| J["LinkedIn Client → API"]
+    I -->|Agendar| K["scheduled_posts<br/>(SQLite)"]
+    K --> L["Scheduler (goroutine)<br/>verifica horário"]
+    L -->|chegou a hora| J
+    J --> M(["Post publicado<br/>no LinkedIn ✅"])
