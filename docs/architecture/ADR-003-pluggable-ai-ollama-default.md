@@ -1,39 +1,40 @@
-# ADR-003 — Camada de IA plugável com Ollama como padrão
+# ADR-003 — Pluggable AI layer with Ollama as the default
 
-- **Status:** Aceito
-- **Data:** 2026-05-25
+- **Status:** Accepted
+- **Date:** 2026-05-25
 
-## Contexto
+## Context
 
-A geração de conteúdo é o coração do produto, mas o projeto tem **custo zero** como regra.
-Provedores de LLM em nuvem (Claude, OpenAI) exigem uma chave paga. Ao mesmo tempo, quem quiser
-mais qualidade deve poder usar a própria chave.
+Content generation is the heart of the product, but the project has **zero cost** as a rule.
+Cloud LLM providers (Claude, OpenAI) require a paid key. At the same time, anyone who wants
+higher quality should be able to use their own key.
 
-## Decisão
+## Decision
 
-Definir uma **interface `AIProvider`** desacoplada, com implementações intercambiáveis:
+Define a decoupled **`AIProvider` interface**, with interchangeable implementations:
 
-- **`OllamaProvider`** — padrão. Modelo executado localmente via [Ollama](https://ollama.com/),
-  custo zero.
-- **`APIProvider`** — "traga sua própria chave" (BYO) para Claude/OpenAI, configurável.
+- **`OllamaProvider`** — the default. A model run locally via [Ollama](https://ollama.com/),
+  at zero cost.
+- **`APIProvider`** — "bring your own key" (BYO) for Claude/OpenAI, configurable.
 
-A escolha do provedor fica em configuração (settings no SQLite / `.env`). O prompt de geração
-segue a especificação do agente `agents/linkedin-post-writer.agent.md`.
+The provider choice lives in configuration (settings in SQLite / `.env`). The generation prompt
+follows the specification of the `agents/linkedin-post-writer.agent.md` agent and always produces
+posts in English.
 
-## Alternativas consideradas
+## Alternatives considered
 
-- **Somente BYO key:** mais simples e melhor qualidade de texto, mas exige uma chave paga para
-  o app funcionar — viola "custo zero".
-- **Somente Ollama:** 100% grátis e privado, mas a qualidade depende do hardware do usuário e
-  remove a flexibilidade de quem prefere um modelo de ponta.
+- **BYO key only:** simpler and better text quality, but requires a paid key for the
+  app to work at all — this violates "zero cost".
+- **Ollama only:** 100% free and private, but quality depends on the user's hardware and
+  removes the flexibility for those who prefer a state-of-the-art model.
 
-## Consequências
+## Consequences
 
-**Positivas**
-- Honra "custo zero" e "open source" com o default local.
-- Flexível: trocar de provedor não toca a lógica de domínio.
-- Privacidade máxima na opção local (nada sai da máquina).
+**Positive**
+- Honors "zero cost" and "open source" with the local default.
+- Flexible: switching providers does not touch the domain logic.
+- Maximum privacy in the local option (nothing leaves the machine).
 
-**Negativas / trade-offs**
-- Manter mais de uma implementação e normalizar diferenças entre provedores.
-- Qualidade do default (Ollama) varia conforme o modelo/hardware local.
+**Negative / trade-offs**
+- Maintaining more than one implementation and normalizing differences between providers.
+- The quality of the default (Ollama) varies with the local model/hardware.

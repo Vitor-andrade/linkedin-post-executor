@@ -2,36 +2,36 @@ BINARY := linkedin-post-executor
 
 .PHONY: help build build-ui build-go dev-api dev-ui run test lint tidy clean
 
-help: ## Mostra esta ajuda
+help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-build: build-ui build-go ## Build completo (UI + binário único)
+build: build-ui build-go ## Full build (UI + single binary)
 
-build-ui: ## Compila a UI (React/Vite) para web/dist
+build-ui: ## Build the UI (React/Vite) into web/dist
 	cd web && npm install && npm run build
 
-build-go: ## Compila o binário Go (embute a UI já construída)
+build-go: ## Build the Go binary (embeds the already-built UI)
 	go build -o $(BINARY) .
 
-run: ## Sobe o binário compilado
+run: ## Run the compiled binary
 	./$(BINARY)
 
-dev-api: ## Sobe a API Go em modo dev (porta 8080)
+dev-api: ## Run the Go API in dev mode (port 8080)
 	go run .
 
-dev-ui: ## Sobe a UI em modo dev (porta 5173, proxy para a API)
+dev-ui: ## Run the UI in dev mode (port 5173, proxies to the API)
 	cd web && npm install && npm run dev
 
-test: ## Roda os testes Go
+test: ## Run Go tests
 	go test ./...
 
-lint: ## Vet do Go + checagem de tipos da UI
+lint: ## Go vet + UI type checking
 	go vet ./...
 	cd web && npm run lint
 
-tidy: ## Organiza as dependências Go
+tidy: ## Tidy Go dependencies
 	go mod tidy
 
-clean: ## Remove binário e banco local
+clean: ## Remove the binary and the local database
 	rm -f $(BINARY) *.db *.db-shm *.db-wal

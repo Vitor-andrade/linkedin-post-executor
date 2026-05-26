@@ -8,7 +8,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/vitorandrade/linkedin-post-executor/internal/store"
+	"github.com/Vitor-andrade/linkedin-post-executor/internal/store"
 )
 
 // tickInterval controls how often the scheduler checks for due posts.
@@ -31,14 +31,14 @@ func (s *Scheduler) Start(ctx context.Context) {
 }
 
 func (s *Scheduler) run(ctx context.Context) {
-	log.Printf("scheduler iniciado (intervalo %s)", tickInterval)
+	log.Printf("scheduler started (interval %s)", tickInterval)
 	ticker := time.NewTicker(tickInterval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println("scheduler encerrado")
+			log.Println("scheduler stopped")
 			return
 		case <-ticker.C:
 			s.tick(ctx)
@@ -52,10 +52,10 @@ func (s *Scheduler) run(ctx context.Context) {
 func (s *Scheduler) tick(ctx context.Context) {
 	due, err := s.store.DueScheduledPosts(ctx, time.Now())
 	if err != nil {
-		log.Printf("scheduler: erro ao buscar posts vencidos: %v", err)
+		log.Printf("scheduler: failed to fetch due posts: %v", err)
 		return
 	}
 	for _, p := range due {
-		log.Printf("scheduler: post #%d vencido (publicação será integrada na fatia de publish)", p.ID)
+		log.Printf("scheduler: post #%d is due (publishing will be wired in the publish slice)", p.ID)
 	}
 }

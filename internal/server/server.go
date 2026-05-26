@@ -7,8 +7,8 @@ import (
 	"io/fs"
 	"net/http"
 
-	"github.com/vitorandrade/linkedin-post-executor/internal/ai"
-	"github.com/vitorandrade/linkedin-post-executor/internal/store"
+	"github.com/Vitor-andrade/linkedin-post-executor/internal/ai"
+	"github.com/Vitor-andrade/linkedin-post-executor/internal/store"
 )
 
 // Deps holds the collaborators the server needs.

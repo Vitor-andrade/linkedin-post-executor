@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LinkedIn Post Executor — Diagramas de Arquitetura</title>
+  <title>LinkedIn Post Executor — Architecture Diagrams</title>
   <style>
     :root {
       --bg: #ffffff;
@@ -66,50 +66,50 @@
   </style>
 </head>
 <body>
-  <h1>LinkedIn Post Executor — Diagramas de Arquitetura</h1>
-  <p class="subtitle">Open source · local-first · custo zero · BYO credenciais</p>
+  <h1>LinkedIn Post Executor — Architecture Diagrams</h1>
+  <p class="subtitle">Open source · local-first · zero cost · BYO credentials</p>
 
   <nav>
-    <a href="#system-context">Contexto</a>
-    <a href="#components">Componentes</a>
-    <a href="#data-flow">Fluxo de Dados</a>
+    <a href="#system-context">Context</a>
+    <a href="#components">Components</a>
+    <a href="#data-flow">Data Flow</a>
     <a href="#deployment">Deployment</a>
-    <a href="#publish">Sequência de Publicação</a>
-    <a href="#data-model">Modelo de Dados</a>
+    <a href="#publish">Publishing Sequence</a>
+    <a href="#data-model">Data Model</a>
   </nav>
 
   <section class="diagram-section" id="system-context">
-    <h2>Diagrama de Contexto do Sistema</h2>
+    <h2>System Context Diagram</h2>
     <pre class="mermaid">
 graph TD
-    user([Desenvolvedor<br/>dono da instância])
-    subgraph local["Máquina local do usuário"]
-        app["LinkedIn Post Executor<br/>(binário único Go)"]
-        ollama["Ollama<br/>(LLM local — padrão)"]
+    user([Developer<br/>instance owner])
+    subgraph local["User's local machine"]
+        app["LinkedIn Post Executor<br/>(single Go binary)"]
+        ollama["Ollama<br/>(local LLM — default)"]
         db[("SQLite<br/>data.db")]
     end
-    llmapi["API de LLM externa<br/>(Claude / OpenAI — opcional, BYO key)"]
-    linkedin["API do LinkedIn<br/>(Share on LinkedIn)"]
+    llmapi["External LLM API<br/>(Claude / OpenAI — optional, BYO key)"]
+    linkedin["LinkedIn API<br/>(Share on LinkedIn)"]
 
-    user --&gt;|"abre localhost,<br/>escreve, agenda"| app
-    app --&gt;|"gera conteúdo (padrão)"| ollama
-    app -.-&gt;|"gera conteúdo (opcional, BYO key)"| llmapi
-    app --&gt;|"lê/grava rascunhos,<br/>agendamentos, tokens"| db
-    app --&gt;|"publica no próprio perfil<br/>OAuth w_member_social"| linkedin
+    user --&gt;|"opens localhost,<br/>writes, schedules"| app
+    app --&gt;|"generates content (default)"| ollama
+    app -.-&gt;|"generates content (optional, BYO key)"| llmapi
+    app --&gt;|"reads/writes drafts,<br/>schedules, tokens"| db
+    app --&gt;|"publishes to own profile<br/>OAuth w_member_social"| linkedin
     </pre>
     <div class="description">
-      <p>A ferramenta roda inteiramente na máquina do usuário. O único tráfego que sai é a
-      publicação no LinkedIn (e, opcionalmente, a chamada a um LLM em nuvem se o usuário trouxer
-      a própria chave).</p>
+      <p>The tool runs entirely on the user's machine. The only outbound traffic is
+      publishing to LinkedIn (and, optionally, the call to a cloud LLM if the user brings
+      their own key).</p>
     </div>
   </section>
 
   <section class="diagram-section" id="components">
-    <h2>Diagrama de Componentes</h2>
+    <h2>Component Diagram</h2>
     <pre class="mermaid">
 graph TD
-    subgraph binary["Binário único (Go) — http://localhost"]
-        ui["UI React + Vite<br/>(embutida via go:embed)"]
+    subgraph binary["Single binary (Go) — http://localhost"]
+        ui["React + Vite UI<br/>(embedded via go:embed)"]
         subgraph api["HTTP API"]
             gen["/api/generate"]
             drafts["/api/drafts"]
@@ -119,11 +119,11 @@ graph TD
         end
         scheduler["Scheduler<br/>(goroutine + ticker)"]
         subgraph ai["AIProvider (interface)"]
-            ollama["OllamaProvider<br/>(local, padrão)"]
+            ollama["OllamaProvider<br/>(local, default)"]
             apiprov["APIProvider<br/>(Claude/OpenAI, BYO)"]
         end
         liclient["LinkedIn Client<br/>(OAuth + publish)"]
-        repo["Repositório (SQLite)"]
+        repo["Repository (SQLite)"]
     end
     dbfile[("data.db")]
 
@@ -134,114 +134,114 @@ graph TD
     settings --&gt; repo
     li --&gt; liclient
     liclient --&gt; repo
-    scheduler --&gt;|"posts vencidos"| repo
-    scheduler --&gt;|publica| liclient
+    scheduler --&gt;|"due posts"| repo
+    scheduler --&gt;|publishes| liclient
     repo --&gt; dbfile
     </pre>
     <div class="description">
-      <p>Monólito modular: um processo serve a UI, a API, o scheduler e a integração. A camada
-      <code>AIProvider</code> isola o domínio dos provedores externos.</p>
+      <p>Modular monolith: one process serves the UI, the API, the scheduler, and the integration. The
+      <code>AIProvider</code> layer isolates the domain from external providers.</p>
     </div>
   </section>
 
   <section class="diagram-section" id="data-flow">
-    <h2>Diagrama de Fluxo de Dados</h2>
+    <h2>Data Flow Diagram</h2>
     <pre class="mermaid">
 flowchart LR
-    A["Usuário informa<br/>título + descrição"] --&gt; B["/api/generate"]
-    B --&gt; C{Provedor<br/>de IA}
-    C --&gt;|padrão| D["Ollama (local)"]
+    A["User provides<br/>title + description"] --&gt; B["/api/generate"]
+    B --&gt; C{AI<br/>provider}
+    C --&gt;|default| D["Ollama (local)"]
     C --&gt;|BYO key| E["Claude / OpenAI"]
-    D --&gt; F["Post formatado<br/>(Unicode, hook, CTA, hashtags)"]
+    D --&gt; F["Formatted post<br/>(Unicode, hook, CTA, hashtags)"]
     E --&gt; F
-    F --&gt; G["Usuário revisa/edita"]
-    G --&gt; H["Salva rascunho<br/>(SQLite)"]
-    H --&gt; I{Ação}
-    I --&gt;|Publicar agora| J["LinkedIn Client → API"]
-    I --&gt;|Agendar| K["scheduled_posts<br/>(SQLite)"]
-    K --&gt; L["Scheduler (goroutine)<br/>verifica horário"]
-    L --&gt;|chegou a hora| J
-    J --&gt; M(["Post publicado<br/>no LinkedIn ✅"])
+    F --&gt; G["User reviews/edits"]
+    G --&gt; H["Saves draft<br/>(SQLite)"]
+    H --&gt; I{Action}
+    I --&gt;|Publish now| J["LinkedIn Client → API"]
+    I --&gt;|Schedule| K["scheduled_posts<br/>(SQLite)"]
+    K --&gt; L["Scheduler (goroutine)<br/>checks time"]
+    L --&gt;|time has come| J
+    J --&gt; M(["Post published<br/>on LinkedIn ✅"])
     </pre>
     <div class="description">
-      <p>Do tema ao post publicado. O conteúdo gerado é sempre um rascunho editável antes de
-      qualquer publicação.</p>
+      <p>From topic to published post. The generated content is always an editable draft before
+      any publishing.</p>
     </div>
   </section>
 
   <section class="diagram-section" id="deployment">
-    <h2>Diagrama de Deployment</h2>
+    <h2>Deployment Diagram</h2>
     <pre class="mermaid">
 graph TD
-    subgraph machine["Máquina do usuário (qualquer SO)"]
-        subgraph proc["Processo único: linkedin-post-executor"]
-            httpd["Servidor HTTP :PORT"]
-            uiassets["Assets da UI (embed)"]
+    subgraph machine["User's machine (any OS)"]
+        subgraph proc["Single process: linkedin-post-executor"]
+            httpd["HTTP server :PORT"]
+            uiassets["UI assets (embed)"]
             sch["Scheduler (goroutine)"]
         end
-        file[("data.db (arquivo SQLite)")]
-        ollamasrv["Ollama (serviço local opcional)"]
-        browser["Navegador → http://localhost:PORT"]
+        file[("data.db (SQLite file)")]
+        ollamasrv["Ollama (optional local service)"]
+        browser["Browser → http://localhost:PORT"]
     end
-    cloudllm["LLM em nuvem (opcional, BYO key)"]
-    li["API do LinkedIn"]
+    cloudllm["Cloud LLM (optional, BYO key)"]
+    li["LinkedIn API"]
 
     browser --&gt; httpd
     httpd --&gt; uiassets
     proc --&gt; file
     proc --&gt; ollamasrv
-    proc -.-&gt;|opcional| cloudllm
+    proc -.-&gt;|optional| cloudllm
     proc --&gt;|HTTPS| li
     </pre>
     <div class="description">
-      <p>Sem servidores, sem orquestração: um executável e um arquivo de banco. Ollama é um
-      serviço local opcional; LLM em nuvem é opcional via chave própria.</p>
+      <p>No servers, no orchestration: one executable and one database file. Ollama is an
+      optional local service; the cloud LLM is optional via your own key.</p>
     </div>
   </section>
 
   <section class="diagram-section" id="publish">
-    <h2>Sequência de Publicação (Agendada)</h2>
+    <h2>Publishing Sequence (Scheduled)</h2>
     <pre class="mermaid">
 sequenceDiagram
-    actor U as Usuário
+    actor U as User
     participant UI as UI (React)
     participant API as API (Go)
     participant DB as SQLite
     participant SCH as Scheduler
-    participant LI as API LinkedIn
+    participant LI as LinkedIn API
 
-    Note over U,LI: Publicação agendada
-    U-&gt;&gt;UI: Define post + data/hora
+    Note over U,LI: Scheduled publishing
+    U-&gt;&gt;UI: Sets post + date/time
     UI-&gt;&gt;API: POST /api/schedule
-    API-&gt;&gt;DB: grava scheduled_post (status=pending)
+    API-&gt;&gt;DB: writes scheduled_post (status=pending)
     API--&gt;&gt;UI: 201 Created
 
-    loop a cada tick
-        SCH-&gt;&gt;DB: busca posts vencidos (pending)
-        DB--&gt;&gt;SCH: post(s) due
-        SCH-&gt;&gt;DB: lê + descriptografa token OAuth
-        alt token expirado
+    loop every tick
+        SCH-&gt;&gt;DB: fetches due posts (pending)
+        DB--&gt;&gt;SCH: due post(s)
+        SCH-&gt;&gt;DB: reads + decrypts OAuth token
+        alt token expired
             SCH-&gt;&gt;LI: refresh token
-            LI--&gt;&gt;SCH: novo access token
-            SCH-&gt;&gt;DB: grava token atualizado
+            LI--&gt;&gt;SCH: new access token
+            SCH-&gt;&gt;DB: writes updated token
         end
         SCH-&gt;&gt;LI: POST /ugcPosts (w_member_social)
-        LI--&gt;&gt;SCH: 201 + URN do post
-        SCH-&gt;&gt;DB: status=published, salva URN
+        LI--&gt;&gt;SCH: 201 + post URN
+        SCH-&gt;&gt;DB: status=published, saves URN
     end
     </pre>
     <div class="description">
-      <p>O scheduler verifica periodicamente posts vencidos, renova o token se necessário e
-      publica via API oficial, registrando o resultado.</p>
+      <p>The scheduler periodically checks for due posts, refreshes the token if needed, and
+      publishes via the official API, recording the result.</p>
     </div>
   </section>
 
   <section class="diagram-section" id="data-model">
-    <h2>Modelo de Dados (SQLite)</h2>
+    <h2>Data Model (SQLite)</h2>
     <pre class="mermaid">
 erDiagram
-    DRAFTS ||--o{ DRAFT_VERSIONS : "tem"
-    DRAFTS ||--o| SCHEDULED_POSTS : "pode gerar"
+    DRAFTS ||--o{ DRAFT_VERSIONS : "has"
+    DRAFTS ||--o| SCHEDULED_POSTS : "can generate"
 
     DRAFTS {
         int id PK
@@ -283,8 +283,8 @@ erDiagram
     }
     </pre>
     <div class="description">
-      <p>Esquema mínimo para rascunhos com versionamento, agendamentos, tokens criptografados e
-      configurações.</p>
+      <p>A minimal schema for drafts with versioning, schedules, encrypted tokens, and
+      settings.</p>
     </div>
   </section>
 

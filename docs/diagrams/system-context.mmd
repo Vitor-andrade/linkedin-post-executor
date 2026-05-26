@@ -1,18 +1,18 @@
 graph TD
-    user([Desenvolvedor<br/>dono da instância])
-    subgraph local["Máquina local do usuário"]
-        app["LinkedIn Post Executor<br/>(binário único Go)"]
-        ollama["Ollama<br/>(LLM local — padrão)"]
+    user([Developer<br/>instance owner])
+    subgraph local["User's local machine"]
+        app["LinkedIn Post Executor<br/>(single Go binary)"]
+        ollama["Ollama<br/>(local LLM — default)"]
         db[("SQLite<br/>data.db")]
     end
-    llmapi["API de LLM externa<br/>(Claude / OpenAI — opcional, BYO key)"]
-    linkedin["API do LinkedIn<br/>(Share on LinkedIn)"]
+    llmapi["External LLM API<br/>(Claude / OpenAI — optional, BYO key)"]
+    linkedin["LinkedIn API<br/>(Share on LinkedIn)"]
 
-    user -->|"abre localhost,<br/>escreve, agenda"| app
-    app -->|"gera conteúdo (padrão)"| ollama
-    app -.->|"gera conteúdo (opcional, BYO key)"| llmapi
-    app -->|"lê/grava rascunhos,<br/>agendamentos, tokens"| db
-    app -->|"publica no próprio perfil<br/>OAuth w_member_social"| linkedin
+    user -->|"opens localhost,<br/>writes, schedules"| app
+    app -->|"generates content (default)"| ollama
+    app -.->|"generates content (optional, BYO key)"| llmapi
+    app -->|"reads/writes drafts,<br/>schedules, tokens"| db
+    app -->|"publishes to own profile<br/>OAuth w_member_social"| linkedin
 
     classDef ext fill:#ffe0b2,stroke:#e65100;
     classDef int fill:#bbdefb,stroke:#0d47a1;

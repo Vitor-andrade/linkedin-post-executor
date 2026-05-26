@@ -1,4 +1,4 @@
-module github.com/vitorandrade/linkedin-post-executor
+module github.com/Vitor-andrade/linkedin-post-executor
 
 go 1.25.5
 

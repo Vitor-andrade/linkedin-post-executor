@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vitorandrade/linkedin-post-executor/internal/ai"
-	"github.com/vitorandrade/linkedin-post-executor/internal/store"
+	"github.com/Vitor-andrade/linkedin-post-executor/internal/ai"
+	"github.com/Vitor-andrade/linkedin-post-executor/internal/store"
 )
 
 func handleHealth(d Deps) http.HandlerFunc {
@@ -24,11 +24,11 @@ func handleGenerate(d Deps) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req ai.GenerateRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			writeError(w, http.StatusBadRequest, "corpo inválido")
+			writeError(w, http.StatusBadRequest, "invalid request body")
 			return
 		}
 		if strings.TrimSpace(req.Title) == "" {
-			writeError(w, http.StatusBadRequest, "título é obrigatório")
+			writeError(w, http.StatusBadRequest, "title is required")
 			return
 		}
 
@@ -59,11 +59,11 @@ func handleCreateDraft(d Deps) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var in store.Draft
 		if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-			writeError(w, http.StatusBadRequest, "corpo inválido")
+			writeError(w, http.StatusBadRequest, "invalid request body")
 			return
 		}
 		if strings.TrimSpace(in.Title) == "" {
-			writeError(w, http.StatusBadRequest, "título é obrigatório")
+			writeError(w, http.StatusBadRequest, "title is required")
 			return
 		}
 		created, err := d.Store.CreateDraft(r.Context(), in)

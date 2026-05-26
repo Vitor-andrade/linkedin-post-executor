@@ -12,11 +12,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/vitorandrade/linkedin-post-executor/internal/ai"
-	"github.com/vitorandrade/linkedin-post-executor/internal/schedule"
-	"github.com/vitorandrade/linkedin-post-executor/internal/server"
-	"github.com/vitorandrade/linkedin-post-executor/internal/store"
-	"github.com/vitorandrade/linkedin-post-executor/web"
+	"github.com/Vitor-andrade/linkedin-post-executor/internal/ai"
+	"github.com/Vitor-andrade/linkedin-post-executor/internal/schedule"
+	"github.com/Vitor-andrade/linkedin-post-executor/internal/server"
+	"github.com/Vitor-andrade/linkedin-post-executor/internal/store"
+	"github.com/Vitor-andrade/linkedin-post-executor/web"
 )
 
 func main() {
@@ -30,7 +30,7 @@ func main() {
 	defer st.Close()
 
 	provider := ai.NewFromEnv()
-	log.Printf("provedor de IA: %s", provider.Name())
+	log.Printf("AI provider: %s", provider.Name())
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -51,14 +51,14 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("LinkedIn Post Executor rodando em http://localhost%s", addr)
+		log.Printf("LinkedIn Post Executor running at http://localhost%s", addr)
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("server: %v", err)
 		}
 	}()
 
 	<-ctx.Done()
-	log.Println("encerrando...")
+	log.Println("shutting down...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil {

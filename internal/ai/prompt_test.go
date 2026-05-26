@@ -1,37 +1,27 @@
 package ai
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestBuildPromptIncludesTitleAndDescription(t *testing.T) {
 	got := buildPrompt(GenerateRequest{
-		Title:       "Escalando uma API em Go",
-		Description: "Lições sobre concorrência",
+		Title:       "Scaling an API in Go",
+		Description: "Lessons on concurrency",
 	})
 
-	if !contains(got, "Escalando uma API em Go") {
-		t.Errorf("prompt não contém o título: %q", got)
+	if !strings.Contains(got, "Scaling an API in Go") {
+		t.Errorf("prompt does not contain the title: %q", got)
 	}
-	if !contains(got, "Lições sobre concorrência") {
-		t.Errorf("prompt não contém a descrição: %q", got)
+	if !strings.Contains(got, "Lessons on concurrency") {
+		t.Errorf("prompt does not contain the description: %q", got)
 	}
 }
 
 func TestBuildPromptOmitsEmptyDescription(t *testing.T) {
-	got := buildPrompt(GenerateRequest{Title: "Apenas título"})
-	if contains(got, "Descrição/Contexto:") {
-		t.Errorf("prompt não deveria incluir rótulo de descrição quando vazia: %q", got)
+	got := buildPrompt(GenerateRequest{Title: "Title only"})
+	if strings.Contains(got, "Description/Context:") {
+		t.Errorf("prompt should not include the description label when empty: %q", got)
 	}
-}
-
-func contains(haystack, needle string) bool {
-	return len(haystack) >= len(needle) && indexOf(haystack, needle) >= 0
-}
-
-func indexOf(s, sub string) int {
-	for i := 0; i+len(sub) <= len(s); i++ {
-		if s[i:i+len(sub)] == sub {
-			return i
-		}
-	}
-	return -1
 }

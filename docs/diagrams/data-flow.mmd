@@ -1,15 +1,15 @@
 flowchart LR
-    A["Usuário informa<br/>título + descrição"] --> B["/api/generate"]
-    B --> C{Provedor<br/>de IA}
-    C -->|padrão| D["Ollama (local)"]
+    A["User provides<br/>title + description"] --> B["/api/generate"]
+    B --> C{AI<br/>provider}
+    C -->|default| D["Ollama (local)"]
     C -->|BYO key| E["Claude / OpenAI"]
-    D --> F["Post formatado<br/>(Unicode, hook, CTA, hashtags)"]
+    D --> F["Formatted post<br/>(Unicode, hook, CTA, hashtags)"]
     E --> F
-    F --> G["Usuário revisa/edita"]
-    G --> H["Salva rascunho<br/>(SQLite)"]
-    H --> I{Ação}
-    I -->|Publicar agora| J["LinkedIn Client → API"]
-    I -->|Agendar| K["scheduled_posts<br/>(SQLite)"]
-    K --> L["Scheduler (goroutine)<br/>verifica horário"]
-    L -->|chegou a hora| J
-    J --> M(["Post publicado<br/>no LinkedIn ✅"])
+    F --> G["User reviews/edits"]
+    G --> H["Saves draft<br/>(SQLite)"]
+    H --> I{Action}
+    I -->|Publish now| J["LinkedIn Client → API"]
+    I -->|Schedule| K["scheduled_posts<br/>(SQLite)"]
+    K --> L["Scheduler (goroutine)<br/>checks time"]
+    L -->|time has come| J
+    J --> M(["Post published<br/>on LinkedIn ✅"])

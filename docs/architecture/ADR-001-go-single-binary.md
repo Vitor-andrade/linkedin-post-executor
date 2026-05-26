@@ -1,43 +1,43 @@
-# ADR-001 — Backend em Go compilado em binário único
+# ADR-001 — Go backend compiled into a single binary
 
-- **Status:** Aceito
-- **Data:** 2026-05-25
+- **Status:** Accepted
+- **Date:** 2026-05-25
 
-## Contexto
+## Context
 
-O projeto é **local-first**, **open source** e precisa ser distribuído como um
-**produto individualizado** (cada usuário roda a própria instância). A facilidade de
-"baixar e rodar" é um requisito de primeira ordem. Há também um agendador que precisa
-rodar em segundo plano para publicar posts no horário marcado.
+The project is **local-first**, **open source**, and must be distributed as an
+**individualized product** (each user runs their own instance). The ease of
+"download and run" is a first-order requirement. There is also a scheduler that needs
+to run in the background to publish posts at the scheduled time.
 
-O autor é proficiente em Node/TypeScript e tem interesse em aprofundar Go, sem pressão de prazo.
+The author is proficient in Node/TypeScript and is interested in going deeper into Go, with no time pressure.
 
-## Decisão
+## Decision
 
-Usar **Go** no backend, compilando em um **único binário** que embute a UID (React/Vite)
-via `go:embed`. O mesmo processo serve a interface, expõe a API HTTP local e executa o
-agendador.
+Use **Go** for the backend, compiling into a **single binary** that embeds the UI (React/Vite)
+via `go:embed`. The same process serves the interface, exposes the local HTTP API, and runs the
+scheduler.
 
-## Alternativas consideradas
+## Alternatives considered
 
-- **Next.js full-stack:** entrega mais rápida e familiar, porém a execução local exige
-  runtime Node, e um agendador persistente local fica deselegante (precisaria de um worker
-  `node-cron` separado). A distribuição vira "clone o repo + npm install" ou Docker.
-- **Go API + Next.js separado:** mais flexível, mas são dois processos para rodar localmente,
-  o que enfraquece a proposta "baixe e rode".
+- **Next.js full-stack:** faster and more familiar to deliver, but local execution requires the
+  Node runtime, and a persistent local scheduler becomes awkward (it would need a separate
+  `node-cron` worker). Distribution turns into "clone the repo + npm install" or Docker.
+- **Go API + separate Next.js:** more flexible, but it means two processes to run locally,
+  which weakens the "download and run" proposition.
 
-## Consequências
+## Consequences
 
-**Positivas**
-- Distribuição trivial: um executável sem dependências de runtime; cross-compile simples.
-- Goroutines tornam o agendador em segundo plano natural e leve.
-- Baixo consumo de recursos rodando localmente.
-- Objetivo de aprendizado do autor atendido.
+**Positive**
+- Trivial distribution: a single executable with no runtime dependencies; simple cross-compilation.
+- Goroutines make the background scheduler natural and lightweight.
+- Low resource usage when running locally.
+- Meets the author's learning goal.
 
-**Negativas / trade-offs**
-- Curva de aprendizado e mais _boilerplate_ que Next.js.
-- Ecossistema de frontend permanece em JS de qualquer forma (build do Vite embutido).
+**Negative / trade-offs**
+- Learning curve and more boilerplate than Next.js.
+- The frontend ecosystem remains JS either way (the embedded Vite build).
 
-> ⚠️ **Importante:** a escolha de Go **não** é por desempenho de CPU. A latência percebida é
-> dominada pela geração do LLM e pelas chamadas à API do LinkedIn. A motivação real é o
-> **modelo de distribuição** e o **processo persistente** do agendador.
+> ⚠️ **Important:** the choice of Go is **not** about CPU performance. The perceived latency is
+> dominated by LLM generation and the LinkedIn API calls. The real motivation is the
+> **distribution model** and the scheduler's **persistent process**.

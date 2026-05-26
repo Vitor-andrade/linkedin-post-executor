@@ -31,7 +31,7 @@ export default function App() {
         body: JSON.stringify({ title, description }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Falha ao gerar");
+      if (!res.ok) throw new Error(data.error ?? "Failed to generate");
       setContent(data.content);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -45,38 +45,38 @@ export default function App() {
       <header>
         <h1>LinkedIn Post Executor</h1>
         <span className={`badge ${health ? "ok" : "down"}`}>
-          {health ? `online · IA: ${health.aiProvider}` : "backend offline"}
+          {health ? `online · AI: ${health.aiProvider}` : "backend offline"}
         </span>
       </header>
 
       <form onSubmit={generate} className="card">
         <label>
-          Título / Tema
+          Title / Topic
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Ex.: 5 lições que aprendi escalando uma API em Go"
+            placeholder="e.g. 5 lessons I learned scaling an API in Go"
             required
           />
         </label>
         <label>
-          Descrição / Contexto (opcional)
+          Description / Context (optional)
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
-            placeholder="Detalhes, pontos-chave, tom desejado..."
+            placeholder="Details, key points, desired tone..."
           />
         </label>
         <button type="submit" disabled={loading}>
-          {loading ? "Gerando..." : "Gerar post"}
+          {loading ? "Generating..." : "Generate post"}
         </button>
         {error && <p className="error">{error}</p>}
       </form>
 
       {content && (
         <section className="card">
-          <h2>Rascunho gerado</h2>
+          <h2>Generated draft</h2>
           <textarea
             className="output"
             value={content}

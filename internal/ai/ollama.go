@@ -62,12 +62,12 @@ func (o *Ollama) Generate(ctx context.Context, req GenerateRequest) (string, err
 
 	resp, err := o.client.Do(httpReq)
 	if err != nil {
-		return "", fmt.Errorf("não foi possível contatar o Ollama em %s (ele está rodando?): %w", o.baseURL, err)
+		return "", fmt.Errorf("could not reach Ollama at %s (is it running?): %w", o.baseURL, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("ollama retornou status %d", resp.StatusCode)
+		return "", fmt.Errorf("ollama returned status %d", resp.StatusCode)
 	}
 
 	var out ollamaResponse

@@ -1,22 +1,22 @@
 graph TD
-    subgraph machine["Máquina do usuário (qualquer SO)"]
-        subgraph proc["Processo único: linkedin-post-executor"]
-            httpd["Servidor HTTP :PORT"]
-            uiassets["Assets da UI (embed)"]
+    subgraph machine["User's machine (any OS)"]
+        subgraph proc["Single process: linkedin-post-executor"]
+            httpd["HTTP server :PORT"]
+            uiassets["UI assets (embed)"]
             sch["Scheduler (goroutine)"]
         end
-        file[("data.db (arquivo SQLite)")]
-        ollamasrv["Ollama (serviço local opcional)"]
-        browser["Navegador → http://localhost:PORT"]
+        file[("data.db (SQLite file)")]
+        ollamasrv["Ollama (optional local service)"]
+        browser["Browser → http://localhost:PORT"]
     end
-    cloudllm["LLM em nuvem (opcional, BYO key)"]
-    li["API do LinkedIn"]
+    cloudllm["Cloud LLM (optional, BYO key)"]
+    li["LinkedIn API"]
 
     browser --> httpd
     httpd --> uiassets
     proc --> file
     proc --> ollamasrv
-    proc -.->|opcional| cloudllm
+    proc -.->|optional| cloudllm
     proc -->|HTTPS| li
 
     classDef ext fill:#ffe0b2,stroke:#e65100;

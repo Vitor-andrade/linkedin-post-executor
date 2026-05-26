@@ -1,34 +1,34 @@
-# ADR-002 — Persistência com SQLite (arquivo local)
+# ADR-002 — Persistence with SQLite (local file)
 
-- **Status:** Aceito
-- **Data:** 2026-05-25
+- **Status:** Accepted
+- **Date:** 2026-05-25
 
-## Contexto
+## Context
 
-A ferramenta roda localmente e deve ter **custo zero** e **zero infraestrutura**. Ainda assim,
-é necessária persistência: rascunhos, versões, posts agendados (que precisam sobreviver a
-reinícios do app) e tokens de OAuth.
+The tool runs locally and must have **zero cost** and **zero infrastructure**. Even so,
+persistence is needed: drafts, versions, scheduled posts (which must survive app
+restarts), and OAuth tokens.
 
-## Decisão
+## Decision
 
-Usar **SQLite** como banco em arquivo local (ex.: `./data.db`). Driver recomendado:
-**`modernc.org/sqlite`** (implementação em Go puro, sem CGO), para manter o cross-compile e o
-binário único triviais.
+Use **SQLite** as a local file-based database (e.g., `./data.db`). Recommended driver:
+**`modernc.org/sqlite`** (a pure-Go implementation, no CGO), to keep cross-compilation and the
+single binary trivial.
 
-## Alternativas consideradas
+## Alternatives considered
 
-- **Sem banco (JSON/arquivos):** simples, mas frágil para consultas, versionamento e
-  agendamento confiável.
-- **Postgres/MySQL:** poderoso, mas exige um servidor de banco — viola "custo zero" e
+- **No database (JSON/files):** simple, but fragile for queries, versioning, and reliable
+  scheduling.
+- **Postgres/MySQL:** powerful, but requires a database server — this violates "zero cost" and
   "local-first / zero infra".
 
-## Consequências
+## Consequences
 
-**Positivas**
-- Zero custo e zero infraestrutura; dados portáteis em um único arquivo.
-- Banco relacional de verdade, com transações e consultas.
-- `modernc.org/sqlite` evita CGO → mantém o binário único e o cross-compile.
+**Positive**
+- Zero cost and zero infrastructure; data is portable in a single file.
+- A real relational database, with transactions and queries.
+- `modernc.org/sqlite` avoids CGO → keeps the single binary and cross-compilation intact.
 
-**Negativas / trade-offs**
-- Concorrência de escrita limitada (irrelevante para um app single-user local).
-- Tokens de OAuth devem ser **criptografados** em repouso no banco.
+**Negative / trade-offs**
+- Limited write concurrency (irrelevant for a single-user local app).
+- OAuth tokens must be **encrypted** at rest in the database.

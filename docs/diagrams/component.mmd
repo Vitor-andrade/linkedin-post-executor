@@ -1,6 +1,6 @@
 graph TD
-    subgraph binary["Binário único (Go) — http://localhost"]
-        ui["UI React + Vite<br/>(embutida via go:embed)"]
+    subgraph binary["Single binary (Go) — http://localhost"]
+        ui["React + Vite UI<br/>(embedded via go:embed)"]
         subgraph api["HTTP API"]
             gen["/api/generate"]
             drafts["/api/drafts"]
@@ -10,11 +10,11 @@ graph TD
         end
         scheduler["Scheduler<br/>(goroutine + ticker)"]
         subgraph ai["AIProvider (interface)"]
-            ollama["OllamaProvider<br/>(local, padrão)"]
+            ollama["OllamaProvider<br/>(local, default)"]
             apiprov["APIProvider<br/>(Claude/OpenAI, BYO)"]
         end
         liclient["LinkedIn Client<br/>(OAuth + publish)"]
-        repo["Repositório (SQLite)"]
+        repo["Repository (SQLite)"]
     end
     dbfile[("data.db")]
 
@@ -25,8 +25,8 @@ graph TD
     settings --> repo
     li --> liclient
     liclient --> repo
-    scheduler -->|"posts vencidos"| repo
-    scheduler -->|publica| liclient
+    scheduler -->|"due posts"| repo
+    scheduler -->|publishes| liclient
     repo --> dbfile
 
     classDef store fill:#c8e6c9,stroke:#1b5e20;

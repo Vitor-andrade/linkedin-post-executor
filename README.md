@@ -2,253 +2,254 @@
 
 # LinkedIn Post Executor
 
-**Crie, agende e publique conteúdo no seu LinkedIn — local, gratuito e sob seu controle.**
+**Create, schedule and publish content to your LinkedIn — local, free and under your control.**
 
-Uma ferramenta _open source_ e _local-first_ que ajuda desenvolvedores a manter uma presença
-profissional consistente no LinkedIn sem gastar horas escrevendo nem um centavo em serviços.
+An _open source_, _local-first_ tool that helps developers keep a consistent professional
+presence on LinkedIn without spending hours writing or a single cent on services.
 
-[Por que existe](#-por-que-este-projeto-existe) ·
-[Como funciona](#-como-funciona) ·
-[Princípios](#-princípios-inegociáveis) ·
-[Stack](#-stack-técnica) ·
-[Arquitetura](#-arquitetura) ·
+[Why it exists](#-why-this-project-exists) ·
+[How it works](#-how-it-works) ·
+[Principles](#-non-negotiable-principles) ·
+[Stack](#-tech-stack) ·
+[Architecture](#-architecture) ·
 [Roadmap](#-roadmap)
 
-![status](https://img.shields.io/badge/status-em%20construção-yellow)
+![status](https://img.shields.io/badge/status-in%20progress-yellow)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 ![local-first](https://img.shields.io/badge/local--first-✓-green)
-![cost](https://img.shields.io/badge/custo-R$%200-brightgreen)
+![cost](https://img.shields.io/badge/cost-%240-brightgreen)
 
 </div>
 
 ---
 
-## 💡 Por que este projeto existe
+## 💡 Why this project exists
 
-Todo desenvolvedor sabe que estar presente no LinkedIn ajuda — abre portas, atrai
-oportunidades e fortalece a reputação técnica. O problema não é a vontade de postar;
-é o **tempo e a fricção**:
+Every developer knows that being present on LinkedIn helps — it opens doors, attracts
+opportunities and strengthens your technical reputation. The problem isn't the willingness to
+post; it's the **time and friction**:
 
-- Pensar no tema, escrever, formatar, achar as hashtags certas, lembrar de postar no horário certo.
-- A formatação nativa do LinkedIn é limitada — negrito e itálico só com truques de Unicode.
-- Manter **consistência** semana após semana é o que realmente move o ponteiro, e é exatamente
-  onde a maioria desiste.
+- Coming up with the topic, writing, formatting, finding the right hashtags, remembering to post
+  at the right time.
+- LinkedIn's native formatting is limited — bold and italic only work through Unicode tricks.
+- Staying **consistent** week after week is what actually moves the needle, and it's exactly
+  where most people give up.
 
-O **LinkedIn Post Executor** nasceu para remover essa fricção: você descreve a ideia,
-a ferramenta gera um post bem estruturado e pronto para engajar, e — se você quiser —
-publica ou agenda diretamente no **seu** perfil. Sem planilhas, sem copiar e colar manual,
-sem assinaturas mensais.
+**LinkedIn Post Executor** was born to remove that friction: you describe the idea, the tool
+generates a well-structured, engagement-ready post, and — if you want — publishes or schedules it
+directly to **your** profile. No spreadsheets, no manual copy-paste, no monthly subscriptions.
 
-> A intenção é simples: **transformar "eu deveria postar" em "já está agendado" em menos de um minuto.**
-
----
-
-## ✨ O que ele faz
-
-- 📝 **Geração de conteúdo assistida** — informe um título e uma breve descrição; a ferramenta
-  produz um post completo, com gancho ("hook"), corpo escaneável, CTA e hashtags relevantes.
-- 🎨 **Formatação nativa do LinkedIn** — aplica negrito/itálico via tipografia Unicode
-  (𝗯𝗼𝗹𝗱, 𝘪𝘵𝘢𝘭𝘪𝘤), separadores e listas que renderizam direto no editor, sem Markdown.
-- ✍️ **Edição manual sempre no controle** — todo texto gerado é um rascunho editável.
-  A IA é um ponto de partida, não a palavra final.
-- 📅 **Agendamento** — escolha data e hora; a ferramenta publica por você no momento certo.
-- 🚀 **Publicação direta** — integração oficial via OAuth do LinkedIn, no seu próprio perfil.
-- 🔌 **IA do seu jeito** — funciona _de graça_ com um modelo local (Ollama) ou, se preferir
-  mais qualidade, conecte sua própria chave de API (Claude, OpenAI).
+> The goal is simple: **turn "I should post" into "it's already scheduled" in under a minute.**
 
 ---
 
-## ⚙️ Como funciona
+## ✨ What it does
+
+- 📝 **AI-assisted content generation** — give it a title and a short description; the tool
+  produces a complete post, with a hook, a scannable body, a CTA and relevant hashtags.
+- 🎨 **Native LinkedIn formatting** — applies bold/italic via Unicode typography
+  (𝗯𝗼𝗹𝗱, 𝘪𝘵𝘢𝘭𝘪𝘤), separators and lists that render directly in the editor, without Markdown.
+- ✍️ **Manual editing, always in control** — every generated text is an editable draft.
+  AI is a starting point, not the final word.
+- 📅 **Scheduling** — pick a date and time; the tool publishes for you at the right moment.
+- 🚀 **Direct publishing** — official integration via LinkedIn OAuth, to your own profile.
+- 🔌 **AI your way** — works _for free_ with a local model (Ollama) or, if you prefer higher
+  quality, connect your own API key (Claude, OpenAI).
+
+---
+
+## ⚙️ How it works
 
 ```
-   Você                 LinkedIn Post Executor (na sua máquina)              LinkedIn
-   ────                 ───────────────────────────────────────              ────────
-    │  título +            │                                                     │
-    │  descrição           │                                                     │
-    │ ───────────────────▶ │  gera com IA (Ollama local ou sua chave)            │
+   You                  LinkedIn Post Executor (on your machine)              LinkedIn
+   ───                  ────────────────────────────────────────             ────────
+    │  title +             │                                                     │
+    │  description         │                                                     │
+    │ ───────────────────▶ │  generates with AI (local Ollama or your key)       │
     │                      │ ─────────────┐                                      │
-    │   post formatado     │ ◀────────────┘                                      │
+    │   formatted post     │ ◀────────────┘                                      │
     │ ◀─────────────────── │                                                     │
-    │  revisa / edita      │                                                     │
-    │ ───────────────────▶ │  salva rascunho (SQLite)                            │
+    │  review / edit       │                                                     │
+    │ ───────────────────▶ │  saves draft (SQLite)                               │
     │                      │                                                     │
-    │  "publicar agora"    │                                                     │
-    │   ou "agendar"       │                                                     │
-    │ ───────────────────▶ │  publica via OAuth ──────────────────────────────▶ │  ✅ post no ar
-    │                      │  (ou no horário agendado)                           │
+    │  "publish now"       │                                                     │
+    │   or "schedule"      │                                                     │
+    │ ───────────────────▶ │  publishes via OAuth ────────────────────────────▶ │  ✅ post live
+    │                      │  (or at the scheduled time)                         │
 ```
 
-Tudo roda na sua máquina. Suas ideias, rascunhos e credenciais **nunca saem do seu computador** —
-exceto a chamada que publica o post no LinkedIn, feita diretamente do seu app para a API oficial.
+Everything runs on your machine. Your ideas, drafts and credentials **never leave your
+computer** — except the call that publishes the post to LinkedIn, made directly from your app to
+the official API.
 
 ---
 
-## 🔒 Princípios inegociáveis
+## 🔒 Non-negotiable principles
 
-Estas não são metas; são **regras** que guiam cada decisão técnica do projeto:
+These aren't goals; they are **rules** that guide every technical decision in the project:
 
-| Princípio | O que significa na prática |
+| Principle | What it means in practice |
 |---|---|
-| **100% open source** | Código aberto sob licença MIT. Sem caixas-pretas. |
-| **Local-first** | Roda inteiramente na sua máquina. Você abre `localhost`, usa, e pronto. |
-| **Custo zero** | Funciona sem pagar nada: IA local grátis + banco em arquivo + sem servidores. |
-| **Traga suas credenciais (BYO)** | Você registra seu próprio app no LinkedIn e autoriza seu próprio perfil. A ferramenta **nunca** posta em nome de terceiros. |
-| **Privacidade por padrão** | Nenhuma telemetria, nenhum intermediário. Seus dados são seus. |
+| **100% open source** | Open code under the MIT license. No black boxes. |
+| **Local-first** | Runs entirely on your machine. You open `localhost`, use it, done. |
+| **Zero cost** | Works without paying anything: free local AI + file-based database + no servers. |
+| **Bring your own credentials (BYO)** | You register your own LinkedIn app and authorize your own profile. The tool **never** posts on behalf of third parties. |
+| **Privacy by default** | No telemetry, no middleman. Your data is yours. |
 
-Uma consequência elegante do modelo **BYO + local-first**: como cada pessoa autoriza o próprio
-perfil com o próprio app, o projeto **não depende** de aprovações de "partner" da API do LinkedIn
-(exigidas por ferramentas que postam por terceiros). Cada instância é soberana.
+An elegant consequence of the **BYO + local-first** model: since each person authorizes their own
+profile with their own app, the project **does not depend** on LinkedIn "partner" approvals
+(required by tools that post on behalf of third parties). Every instance is sovereign.
 
 ---
 
-## 🧱 Stack técnica
+## 🧱 Tech stack
 
-A stack foi escolhida priorizando **distribuição simples, execução local e custo zero** —
-não modismo. As decisões completas, com trade-offs, estão registradas nos
+The stack was chosen by prioritizing **simple distribution, local execution and zero cost** — not
+trends. The full decisions, with trade-offs, are recorded in the
 [ADRs](docs/architecture/).
 
-| Camada | Tecnologia | Por quê |
+| Layer | Technology | Why |
 |---|---|---|
-| **Backend** | **Go** | Compila em **um único binário** sem dependências de runtime — baixe e rode. Concorrência (goroutines) ideal para o agendador que roda em segundo plano. |
-| **Frontend** | **React + Vite** | UI moderna, embutida no binário Go via `go:embed`. Um processo serve tudo. |
-| **Persistência** | **SQLite** | Banco em um arquivo local. Zero infraestrutura, zero custo, dados portáteis. |
-| **IA** | **Ollama (padrão) + BYO key** | Camada plugável: modelo local gratuito por padrão; conecte Claude/OpenAI se quiser. |
-| **Integração** | **LinkedIn OAuth** (`w_member_social`) | Publicação oficial no seu próprio perfil. |
+| **Backend** | **Go** | Compiles into a **single binary** with no runtime dependencies — download and run. Concurrency (goroutines) is ideal for the scheduler that runs in the background. |
+| **Frontend** | **React + Vite** | Modern UI, embedded into the Go binary via `go:embed`. One process serves everything. |
+| **Persistence** | **SQLite** | A database in a single local file. Zero infrastructure, zero cost, portable data. |
+| **AI** | **Ollama (default) + BYO key** | Pluggable layer: free local model by default; connect Claude/OpenAI if you want. |
+| **Integration** | **LinkedIn OAuth** (`w_member_social`) | Official publishing to your own profile. |
 
-> 💡 **Distribuição:** o resultado final é um executável único (ou um `docker run`). Sem instalar
-> Node, sem subir banco, sem orquestrar serviços. Esse é o coração da proposta "local-first".
+> 💡 **Distribution:** the end result is a single executable (or a `docker run`). No installing
+> Node, no spinning up a database, no orchestrating services. That's the heart of the
+> "local-first" proposition.
 
 ---
 
-## 🏛 Arquitetura
+## 🏛 Architecture
 
 ```
 ╔══════════════════════════════════════════════════════════╗
-║      Um binário Go  (ou  docker run)  —  http://localhost   ║
+║      A single Go binary  (or  docker run)  —  http://localhost ║
 ╠══════════════════════════════════════════════════════════╣
 ║                                                            ║
-║   ┌─ React + Vite (UI)  ── embutida via go:embed            ║
-║   │        ↕ HTTP local (JSON)                              ║
+║   ┌─ React + Vite (UI)  ── embedded via go:embed            ║
+║   │        ↕ local HTTP (JSON)                              ║
 ║   ├─ HTTP API                                               ║
-║   │     ├── /api/generate   → geração de conteúdo (IA)      ║
-║   │     ├── /api/drafts     → rascunhos e versões           ║
-║   │     ├── /api/schedule   → fila de agendamento           ║
-║   │     ├── /api/linkedin   → OAuth + publicação            ║
-║   │     └── /api/settings   → chaves e preferências         ║
+║   │     ├── /api/generate   → content generation (AI)      ║
+║   │     ├── /api/drafts     → drafts and versions          ║
+║   │     ├── /api/schedule   → scheduling queue             ║
+║   │     ├── /api/linkedin   → OAuth + publishing           ║
+║   │     └── /api/settings   → keys and preferences         ║
 ║   │                                                         ║
-║   ├─ Scheduler (goroutine)  → dispara posts no horário      ║
+║   ├─ Scheduler (goroutine)  → fires posts at the right time ║
 ║   │                                                         ║
-║   ├─ AI Provider (interface plugável)                       ║
-║   │     ├── Ollama  (local, grátis — padrão)                ║
-║   │     └── API     (Claude / OpenAI — sua chave)           ║
+║   ├─ AI Provider (pluggable interface)                      ║
+║   │     ├── Ollama  (local, free — default)                 ║
+║   │     └── API     (Claude / OpenAI — your key)            ║
 ║   │                                                         ║
 ║   └─ SQLite  → drafts · scheduled_posts · oauth_tokens      ║
 ║                                                            ║
 ╚══════════════════════════════════════════════════════════╝
 ```
 
-Para o documento completo de arquitetura, com diagramas interativos (contexto do sistema,
-componentes, fluxo de dados, deployment) e registros de decisão, veja
-**[`docs/`](docs/)**.
+For the full architecture document, with interactive diagrams (system context, components, data
+flow, deployment) and decision records, see **[`docs/`](docs/)**.
 
 ---
 
 ## 🗺 Roadmap
 
-O projeto evolui em fatias verticais — cada uma entrega valor de ponta a ponta.
+The project evolves in vertical slices — each one delivers end-to-end value.
 
-- [x] **Fundação** — scaffold Go + Vite + SQLite, CI/CD, base do projeto.
-- [ ] **Fatia 1 — Gerar** — informar tema → IA (Ollama) gera → revisar/editar → salvar rascunho. _(API e UI base prontas; falta persistir o rascunho gerado)_
-- [ ] **Fatia 2 — Publicar** — OAuth do LinkedIn + publicação imediata no próprio perfil.
-- [ ] **Fatia 3 — Agendar** — agendamento com o scheduler em segundo plano.
-- [ ] **Refino** — suporte a chave própria (Claude/OpenAI), métricas locais, melhorias de UX.
-- [ ] **Release** — binários multiplataforma e imagem Docker.
+- [x] **Foundation** — Go + Vite + SQLite scaffold, CI/CD, project base.
+- [ ] **Slice 1 — Generate** — enter a topic → AI (Ollama) generates → review/edit → save draft. _(API and base UI ready; persisting the generated draft still pending)_
+- [ ] **Slice 2 — Publish** — LinkedIn OAuth + immediate publishing to your own profile.
+- [ ] **Slice 3 — Schedule** — scheduling with the background scheduler.
+- [ ] **Polish** — bring-your-own-key support (Claude/OpenAI), local metrics, UX improvements.
+- [ ] **Release** — cross-platform binaries and a Docker image.
 
 ---
 
-## 🚀 Rodando localmente
+## 🚀 Running locally
 
-### Pré-requisitos
+### Prerequisites
 
-| Ferramenta | Para quê | Obrigatório? |
+| Tool | What for | Required? |
 |---|---|---|
-| [Go](https://go.dev/) 1.25+ | Compilar o binário | ✅ |
-| [Node.js](https://nodejs.org/) 22+ e npm | Compilar a UI | ✅ |
-| [Ollama](https://ollama.com/) | IA local gratuita (geração de conteúdo) | Opcional¹ |
-| App no [LinkedIn Developers](https://developer.linkedin.com/) | Publicar no seu perfil | Opcional² |
+| [Go](https://go.dev/) 1.25+ | Build the binary | ✅ |
+| [Node.js](https://nodejs.org/) 22+ and npm | Build the UI | ✅ |
+| [Ollama](https://ollama.com/) | Free local AI (content generation) | Optional¹ |
+| App on [LinkedIn Developers](https://developer.linkedin.com/) | Publish to your profile | Optional² |
 
-> ¹ Necessário apenas para gerar conteúdo com IA local. Alternativamente, traga sua própria
-> chave (Claude/OpenAI) — _em desenvolvimento_.
-> ² Necessário apenas para a publicação automática — _em desenvolvimento_.
+> ¹ Only needed to generate content with local AI. Alternatively, bring your own key
+> (Claude/OpenAI) — _in progress_.
+> ² Only needed for automatic publishing — _in progress_.
 
-### Opção A — binário único (produção)
+### Option A — single binary (production)
 
-Compila a UI, embute no binário Go e executa tudo em um único processo:
+Builds the UI, embeds it into the Go binary and runs everything in a single process:
 
 ```bash
-make build      # gera a UI e compila o binário "linkedin-post-executor"
-make run        # sobe em http://localhost:8080
+make build      # builds the UI and compiles the "linkedin-post-executor" binary
+make run        # starts at http://localhost:8080
 ```
 
-Depois é só abrir **http://localhost:8080** no navegador.
+Then just open **http://localhost:8080** in your browser.
 
-### Opção B — modo desenvolvimento (hot reload)
+### Option B — development mode (hot reload)
 
-Sobe a API Go e a UI do Vite em processos separados (a UI faz _proxy_ de `/api` para a API):
+Runs the Go API and the Vite UI as separate processes (the UI _proxies_ `/api` to the API):
 
 ```bash
-# terminal 1 — API Go (porta 8080)
+# terminal 1 — Go API (port 8080)
 make dev-api
 
-# terminal 2 — UI Vite com hot reload (porta 5173)
+# terminal 2 — Vite UI with hot reload (port 5173)
 make dev-ui
 ```
 
-Acesse **http://localhost:5173**.
+Open **http://localhost:5173**.
 
-### IA local com Ollama (opcional)
+### Local AI with Ollama (optional)
 
-Para a geração de conteúdo funcionar com o provedor padrão (custo zero):
+For content generation to work with the default provider (zero cost):
 
 ```bash
-# instale o Ollama (https://ollama.com) e baixe um modelo
+# install Ollama (https://ollama.com) and pull a model
 ollama pull llama3.1
 ```
 
-O app conversa com o Ollama em `http://localhost:11434` por padrão.
+The app talks to Ollama at `http://localhost:11434` by default.
 
-### Configuração
+### Configuration
 
-Todas as variáveis têm valor padrão; copie `.env.example` para `.env` apenas se quiser ajustar:
+Every variable has a default; copy `.env.example` to `.env` only if you want to tweak something:
 
 ```bash
 cp .env.example .env
 ```
 
-| Variável | Padrão | Descrição |
+| Variable | Default | Description |
 |---|---|---|
-| `LPE_ADDR` | `:8080` | Endereço HTTP local |
-| `LPE_DB` | `data.db` | Caminho do arquivo SQLite |
-| `LPE_AI_PROVIDER` | `ollama` | Provedor de IA |
-| `LPE_OLLAMA_URL` | `http://localhost:11434` | URL do Ollama |
-| `LPE_OLLAMA_MODEL` | `llama3.1` | Modelo do Ollama |
+| `LPE_ADDR` | `:8080` | Local HTTP address |
+| `LPE_DB` | `data.db` | Path to the SQLite file |
+| `LPE_AI_PROVIDER` | `ollama` | AI provider |
+| `LPE_OLLAMA_URL` | `http://localhost:11434` | Ollama URL |
+| `LPE_OLLAMA_MODEL` | `llama3.1` | Ollama model |
 
-### Comandos úteis
+### Useful commands
 
 ```bash
-make help     # lista todos os comandos disponíveis
-make test     # roda os testes Go
-make lint     # go vet + checagem de tipos da UI
-make clean    # remove binário e banco local
+make help     # list all available commands
+make test     # run Go tests
+make lint     # go vet + UI type checking
+make clean    # remove the binary and the local database
 ```
 
 ---
 
-## 🤝 Contribuindo
+## 🤝 Contributing
 
-Contribuições são bem-vindas. Como o projeto preza por simplicidade e pelos princípios acima,
-abra uma _issue_ para discutir mudanças significativas antes de enviar um _pull request_.
+Contributions are welcome. Since the project values simplicity and the principles above, please
+open an _issue_ to discuss significant changes before submitting a _pull request_.
 
-## 📄 Licença
+## 📄 License
 
-Distribuído sob a licença **MIT**. Veja [`LICENSE`](LICENSE) para mais detalhes.
+Distributed under the **MIT** license. See [`LICENSE`](LICENSE) for details.
