@@ -51,6 +51,14 @@ CREATE TABLE IF NOT EXISTS settings (
 	key   TEXT PRIMARY KEY,
 	value TEXT NOT NULL DEFAULT ''
 );
+
+CREATE TABLE IF NOT EXISTS images (
+	id         INTEGER PRIMARY KEY AUTOINCREMENT,
+	mime       TEXT NOT NULL,
+	filename   TEXT NOT NULL DEFAULT '',
+	data       BLOB NOT NULL,
+	created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 `
 
 func (s *Store) migrate() error {

@@ -113,11 +113,39 @@ func TestPublish(t *testing.T) {
 	ugcPostsEndpoint = srv.URL
 	defer func() { ugcPostsEndpoint = restore }()
 
-	urn, err := NewClient().Publish(context.Background(), "at", "urn:li:person:ME", "hello world")
+	urn, err := NewClient().Publish(context.Background(), "at", "urn:li:person:ME", "hello world", nil)
 	if err != nil {
 		t.Fatalf("publish: %v", err)
 	}
 	if urn != "urn:li:share:999" {
+		t.Errorf("urn = %q", urn)
+	}
+}
+
+func TestPublishWithImage(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		s := string(body)
+		if !strings.Contains(s, `"shareMediaCategory":"IMAGE"`) {
+			t.Errorf("expected IMAGE category: %s", s)
+		}
+		if !strings.Contains(s, "urn:li:digitalmediaAsset:abc") {
+			t.Errorf("expected asset in media: %s", s)
+		}
+		w.Header().Set("X-RestLi-Id", "urn:li:share:777")
+		w.WriteHeader(http.StatusCreated)
+	}))
+	defer srv.Close()
+	restore := ugcPostsEndpoint
+	ugcPostsEndpoint = srv.URL
+	defer func() { ugcPostsEndpoint = restore }()
+
+	urn, err := NewClient().Publish(context.Background(), "at", "urn:li:person:ME", "with pic",
+		[]string{"urn:li:digitalmediaAsset:abc"})
+	if err != nil {
+		t.Fatalf("publish: %v", err)
+	}
+	if urn != "urn:li:share:777" {
 		t.Errorf("urn = %q", urn)
 	}
 }

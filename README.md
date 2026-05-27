@@ -57,6 +57,8 @@ directly to **your** profile. No spreadsheets, no manual copy-paste, no monthly 
 - 🗂 **Draft management** — save, list, reopen, edit and delete drafts, all stored locally.
 - 📅 **Scheduling** — pick a date and time; a background worker publishes for you at the right
   moment, retrying transient failures with exponential backoff.
+- 🖼 **Images** — attach one or more images (a carousel) when publishing now; they're uploaded to
+  LinkedIn with the post.
 - 🚀 **Direct publishing** — official integration via LinkedIn OAuth, to your own profile.
 - 🔌 **AI your way** — works _for free_ with a local model (Ollama) or a free Gemini key, or
   connect your own key (Claude, OpenAI) if you prefer.

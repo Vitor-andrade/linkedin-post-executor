@@ -68,8 +68,9 @@ func handleLinkedInCallback(d Deps) http.HandlerFunc {
 func handleLinkedInPublish(d Deps) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req struct {
-			Content string `json:"content"`
-			DraftID *int64 `json:"draftId"`
+			Content  string  `json:"content"`
+			DraftID  *int64  `json:"draftId"`
+			ImageIDs []int64 `json:"imageIds"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			writeError(w, http.StatusBadRequest, "invalid request body")
@@ -90,7 +91,17 @@ func handleLinkedInPublish(d Deps) http.HandlerFunc {
 			return
 		}
 
-		urn, err := d.LinkedIn.PublishNow(r.Context(), text)
+		var images [][]byte
+		for _, id := range req.ImageIDs {
+			img, err := d.Store.GetImage(r.Context(), id)
+			if err != nil {
+				writeError(w, http.StatusBadRequest, "image not found")
+				return
+			}
+			images = append(images, img.Data)
+		}
+
+		urn, err := d.LinkedIn.PublishNowWithImages(r.Context(), text, images)
 		if err != nil {
 			writeError(w, http.StatusBadGateway, err.Error())
 			return

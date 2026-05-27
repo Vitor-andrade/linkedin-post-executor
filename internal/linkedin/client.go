@@ -124,16 +124,30 @@ func (c *Client) AuthorURN(ctx context.Context, accessToken string) (string, err
 	return "urn:li:person:" + u.Sub, nil
 }
 
-// Publish creates a text post on the member's profile and returns its URN.
-func (c *Client) Publish(ctx context.Context, accessToken, authorURN, text string) (string, error) {
+// Publish creates a post on the member's profile and returns its URN. When
+// assetURNs are provided (already-uploaded images), it becomes an image post.
+func (c *Client) Publish(ctx context.Context, accessToken, authorURN, text string, assetURNs []string) (string, error) {
+	share := map[string]any{
+		"shareCommentary":    map[string]any{"text": text},
+		"shareMediaCategory": "NONE",
+	}
+	if len(assetURNs) > 0 {
+		media := make([]map[string]any, 0, len(assetURNs))
+		for _, a := range assetURNs {
+			media = append(media, map[string]any{
+				"status": "READY",
+				"media":  a,
+			})
+		}
+		share["shareMediaCategory"] = "IMAGE"
+		share["media"] = media
+	}
+
 	payload := map[string]any{
 		"author":         authorURN,
 		"lifecycleState": "PUBLISHED",
 		"specificContent": map[string]any{
-			"com.linkedin.ugc.ShareContent": map[string]any{
-				"shareCommentary":    map[string]any{"text": text},
-				"shareMediaCategory": "NONE",
-			},
+			"com.linkedin.ugc.ShareContent": share,
 		},
 		"visibility": map[string]any{
 			"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC",

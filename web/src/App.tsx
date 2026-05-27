@@ -76,6 +76,8 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingIdeas, setLoadingIdeas] = useState(false);
   const [confirmReq, setConfirmReq] = useState<ConfirmRequest | null>(null);
+  const [images, setImages] = useState<{ id: number; filename: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   // confirm shows the modal and resolves to the user's choice, replacing the
   // native window.confirm for a consistent look.
@@ -209,6 +211,28 @@ export default function App() {
     }
   }
 
+  async function uploadImages(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    setError("");
+    try {
+      const form = new FormData();
+      Array.from(files).forEach((f) => form.append("files", f));
+      const res = await fetch("/api/images", { method: "POST", body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to upload image");
+      setImages((prev) => [...prev, ...data]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeImage(id: number) {
+    setImages((prev) => prev.filter((img) => img.id !== id));
+  }
+
   async function publishNow() {
     const ok = await confirm({
       message: "Publish this post to your LinkedIn profile now? This can't be undone.",
@@ -222,11 +246,16 @@ export default function App() {
       const res = await fetch("/api/linkedin/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content, draftId: editingId }),
+        body: JSON.stringify({
+          content,
+          draftId: editingId,
+          imageIds: images.map((img) => img.id),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to publish");
       setNotice(`Published to LinkedIn ✅ (${data.urn})`);
+      setImages([]);
       await loadDrafts();
       await loadMetrics();
     } catch (err) {
@@ -355,6 +384,7 @@ export default function App() {
     setDescription("");
     setContent("");
     setEditingId(null);
+    setImages([]);
     setError("");
   }
 
@@ -490,6 +520,40 @@ export default function App() {
             onChange={(e) => setContent(e.target.value)}
             rows={16}
           />
+
+          <div className="images">
+            {images.map((img) => (
+              <div className="thumb" key={img.id}>
+                <img src={`/api/images/${img.id}`} alt={img.filename} />
+                <button
+                  className="thumb-remove"
+                  onClick={() => removeImage(img.id)}
+                  title="Remove image"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <label className="add-image" title="Attach images">
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={(e) => {
+                  void uploadImages(e.target.files);
+                  e.target.value = "";
+                }}
+              />
+              {uploading ? "…" : "+ Image"}
+            </label>
+          </div>
+          {images.length > 0 && (
+            <span className="meta">
+              {images.length} image{images.length > 1 ? "s" : ""} attached · included when
+              publishing now (scheduling is text-only)
+            </span>
+          )}
+
           <div className="actions">
             <button onClick={saveDraft} disabled={saving || !title.trim()}>
               {saving ? "Saving..." : editingId ? "Update draft" : "Save draft"}

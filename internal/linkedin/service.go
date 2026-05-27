@@ -84,6 +84,13 @@ func (s *Service) Disconnect(ctx context.Context) error {
 // PublishNow publishes text to the connected member's profile, refreshing the
 // token first if needed, and returns the created post URN.
 func (s *Service) PublishNow(ctx context.Context, text string) (string, error) {
+	return s.PublishNowWithImages(ctx, text, nil)
+}
+
+// PublishNowWithImages publishes text plus optional images (a carousel) to the
+// connected member's profile. Each image is uploaded to LinkedIn first and the
+// resulting assets are attached to the post.
+func (s *Service) PublishNowWithImages(ctx context.Context, text string, images [][]byte) (string, error) {
 	tok, err := s.validToken(ctx)
 	if err != nil {
 		return "", err
@@ -98,7 +105,17 @@ func (s *Service) PublishNow(ctx context.Context, text string) (string, error) {
 		}
 		_ = s.store.SetSetting(ctx, authorURNKey, urn)
 	}
-	postURN, err := s.client.Publish(ctx, tok.AccessToken, urn, text)
+
+	var assets []string
+	for _, img := range images {
+		asset, uerr := s.client.UploadImage(ctx, tok.AccessToken, urn, img)
+		if uerr != nil {
+			return "", uerr
+		}
+		assets = append(assets, asset)
+	}
+
+	postURN, err := s.client.Publish(ctx, tok.AccessToken, urn, text, assets)
 	if err != nil {
 		return "", err
 	}
