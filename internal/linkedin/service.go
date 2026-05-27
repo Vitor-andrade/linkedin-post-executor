@@ -98,7 +98,13 @@ func (s *Service) PublishNow(ctx context.Context, text string) (string, error) {
 		}
 		_ = s.store.SetSetting(ctx, authorURNKey, urn)
 	}
-	return s.client.Publish(ctx, tok.AccessToken, urn, text)
+	postURN, err := s.client.Publish(ctx, tok.AccessToken, urn, text)
+	if err != nil {
+		return "", err
+	}
+	// Best-effort local metric; never fail a publish over a counter.
+	_ = s.store.RecordPublished(ctx, time.Now())
+	return postURN, nil
 }
 
 // validToken loads the stored token and transparently refreshes it if expired.

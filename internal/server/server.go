@@ -26,6 +26,7 @@ func New(d Deps) http.Handler {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /api/health", handleHealth(d))
+	mux.HandleFunc("GET /api/metrics", handleMetrics(d))
 	mux.HandleFunc("POST /api/generate", handleGenerate(d))
 	mux.HandleFunc("GET /api/drafts", handleListDrafts(d))
 	mux.HandleFunc("POST /api/drafts", handleCreateDraft(d))

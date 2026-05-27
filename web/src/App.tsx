@@ -21,6 +21,14 @@ interface LinkedInStatus {
   expiresAt?: string;
 }
 
+interface Metrics {
+  draftsTotal: number;
+  draftsByStatus: Record<string, number>;
+  scheduled: { pending: number; published: number; failed: number };
+  publishedTotal: number;
+  lastPublishedAt?: string;
+}
+
 interface ScheduledPost {
   id: number;
   draftId: number | null;
@@ -50,6 +58,7 @@ export default function App() {
   const [scheduledFor, setScheduledFor] = useState("");
   const [scheduling, setScheduling] = useState(false);
   const [scheduled, setScheduled] = useState<ScheduledPost[]>([]);
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   const loadDrafts = useCallback(async () => {
     try {
@@ -81,6 +90,16 @@ export default function App() {
     }
   }, []);
 
+  const loadMetrics = useCallback(async () => {
+    try {
+      const res = await fetch("/api/metrics");
+      if (!res.ok) return;
+      setMetrics(await res.json());
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   useEffect(() => {
     fetch("/api/health")
       .then((r) => r.json())
@@ -89,6 +108,7 @@ export default function App() {
     void loadDrafts();
     void loadLinkedIn();
     void loadScheduled();
+    void loadMetrics();
 
     // Surface the result of the OAuth callback redirect, then clean the URL.
     const params = new URLSearchParams(window.location.search);
@@ -96,7 +116,7 @@ export default function App() {
     if (li === "connected") setNotice("LinkedIn connected ✅");
     else if (li === "error") setError("LinkedIn connection failed. Please try again.");
     if (li) window.history.replaceState({}, "", window.location.pathname);
-  }, [loadDrafts, loadLinkedIn, loadScheduled]);
+  }, [loadDrafts, loadLinkedIn, loadScheduled, loadMetrics]);
 
   async function generate(e: React.FormEvent) {
     e.preventDefault();
@@ -138,6 +158,7 @@ export default function App() {
       if (!res.ok) throw new Error(data.error ?? "Failed to save draft");
       setEditingId(data.id);
       await loadDrafts();
+      await loadMetrics();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -159,6 +180,7 @@ export default function App() {
       if (!res.ok) throw new Error(data.error ?? "Failed to publish");
       setNotice(`Published to LinkedIn ✅ (${data.urn})`);
       await loadDrafts();
+      await loadMetrics();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -190,6 +212,7 @@ export default function App() {
       setNotice(`Scheduled for ${new Date(data.scheduledFor).toLocaleString()}`);
       setScheduledFor("");
       await loadScheduled();
+      await loadMetrics();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -200,6 +223,7 @@ export default function App() {
   async function cancelScheduled(id: number) {
     await fetch(`/api/schedule/${id}`, { method: "DELETE" });
     await loadScheduled();
+    await loadMetrics();
   }
 
   async function disconnect() {
@@ -256,6 +280,36 @@ export default function App() {
       </section>
 
       {notice && <p className="notice">{notice}</p>}
+
+      {metrics && (metrics.draftsTotal > 0 || metrics.publishedTotal > 0) && (
+        <section className="card stats">
+          <div className="stat">
+            <span className="stat-num">{metrics.draftsTotal}</span>
+            <span className="stat-label">drafts</span>
+          </div>
+          <div className="stat">
+            <span className="stat-num">{metrics.scheduled.pending}</span>
+            <span className="stat-label">scheduled</span>
+          </div>
+          <div className="stat">
+            <span className="stat-num">{metrics.publishedTotal}</span>
+            <span className="stat-label">published</span>
+          </div>
+          {metrics.scheduled.failed > 0 && (
+            <div className="stat">
+              <span className="stat-num failed">{metrics.scheduled.failed}</span>
+              <span className="stat-label">failed</span>
+            </div>
+          )}
+          {metrics.lastPublishedAt && (
+            <div className="stat last">
+              <span className="stat-label">
+                last published {new Date(metrics.lastPublishedAt).toLocaleDateString()}
+              </span>
+            </div>
+          )}
+        </section>
+      )}
 
       {editingId && (
         <p className="editing">

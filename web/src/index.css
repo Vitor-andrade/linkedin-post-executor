@@ -124,6 +124,41 @@ button:disabled {
   margin: 0;
 }
 
+.stats {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.stat-num {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-num.failed {
+  color: #cf222e;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+}
+
+.stat.last {
+  margin-left: auto;
+  align-self: center;
+}
+
 .linkedin {
   display: flex;
   align-items: center;

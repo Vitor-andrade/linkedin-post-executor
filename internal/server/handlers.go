@@ -23,6 +23,17 @@ func handleHealth(d Deps) http.HandlerFunc {
 	}
 }
 
+func handleMetrics(d Deps) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		m, err := d.Store.Metrics(r.Context())
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		writeJSON(w, http.StatusOK, m)
+	}
+}
+
 func handleGenerate(d Deps) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req ai.GenerateRequest
