@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -23,6 +24,8 @@ import (
 )
 
 func main() {
+	loadDotEnv(".env")
+
 	addr := envOr("LPE_ADDR", ":8080")
 	dbPath := envOr("LPE_DB", "data.db")
 
@@ -88,6 +91,40 @@ func envOr(key, def string) string {
 		return v
 	}
 	return def
+}
+
+// loadDotEnv loads KEY=VALUE pairs from a .env file into the process
+// environment, without overriding variables already set in the real
+// environment. It is a no-op if the file does not exist. Lines starting with
+// '#' and blank lines are ignored; an optional leading "export " and
+// surrounding quotes on the value are stripped. Keeping this built-in avoids a
+// third-party dependency (local-first, zero-cost).
+func loadDotEnv(path string) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return // no .env (or unreadable) — rely on the real environment
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		line = strings.TrimPrefix(line, "export ")
+		key, val, ok := strings.Cut(line, "=")
+		if !ok {
+			continue
+		}
+		key = strings.TrimSpace(key)
+		val = strings.TrimSpace(val)
+		if len(val) >= 2 && (val[0] == '"' || val[0] == '\'') && val[len(val)-1] == val[0] {
+			val = val[1 : len(val)-1]
+		}
+		if key != "" {
+			if _, exists := os.LookupEnv(key); !exists {
+				_ = os.Setenv(key, val)
+			}
+		}
+	}
 }
 
 // defaultKeyPath returns the path of the encryption key file, preferring the
