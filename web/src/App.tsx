@@ -344,14 +344,8 @@ export default function App() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to get ideas");
-      // Prepend the fresh ideas, keeping the list unique by title.
-      setSuggestions((prev) => {
-        const merged = [...(data.suggestions ?? []), ...prev] as Idea[];
-        const seen = new Set<string>();
-        return merged.filter((i) =>
-          seen.has(i.title) ? false : (seen.add(i.title), true),
-        );
-      });
+      // Replace the list with the 6 freshly generated ideas on each click.
+      setSuggestions((data.suggestions ?? []) as Idea[]);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
