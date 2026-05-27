@@ -6,6 +6,7 @@ package ai
 import (
 	"context"
 	"os"
+	"strings"
 )
 
 // GenerateRequest is the user-supplied seed for a LinkedIn post.
@@ -22,11 +23,27 @@ type Provider interface {
 	Generate(ctx context.Context, req GenerateRequest) (string, error)
 }
 
-// NewFromEnv selects a provider based on environment configuration,
-// defaulting to the local Ollama provider so the app works at zero cost.
+// NewFromEnv selects a provider based on LPE_AI_PROVIDER, defaulting to the
+// local Ollama provider so the app works at zero cost. The "bring your own
+// key" providers (Gemini, Claude, OpenAI) read their API key from the
+// environment; a missing key surfaces as a clear error at generation time.
 func NewFromEnv() Provider {
-	switch os.Getenv("LPE_AI_PROVIDER") {
-	// Future: case "api": return newAPIProvider(...)
+	switch strings.ToLower(os.Getenv("LPE_AI_PROVIDER")) {
+	case "gemini":
+		return NewGemini(
+			os.Getenv("LPE_GEMINI_API_KEY"),
+			envOr("LPE_GEMINI_MODEL", "gemini-2.0-flash"),
+		)
+	case "anthropic", "claude":
+		return NewAnthropic(
+			os.Getenv("LPE_ANTHROPIC_API_KEY"),
+			envOr("LPE_ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
+		)
+	case "openai":
+		return NewOpenAI(
+			os.Getenv("LPE_OPENAI_API_KEY"),
+			envOr("LPE_OPENAI_MODEL", "gpt-4o-mini"),
+		)
 	default:
 		return NewOllama(
 			envOr("LPE_OLLAMA_URL", "http://localhost:11434"),
