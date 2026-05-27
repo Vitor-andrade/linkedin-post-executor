@@ -149,7 +149,7 @@ h2 {
 .badge.ok {
   color: #0c8a47;
   border-color: rgba(12, 138, 71, 0.5);
-  background: rgba(12, 138, 71, 0.1);
+  background: white;
 }
 
 .badge.down {
@@ -536,6 +536,64 @@ button.link.danger {
   color: #d23b4e;
   font-size: 0.78rem;
   font-weight: 500;
+}
+
+/* ── Confirm modal ───────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 12, 24, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 50;
+  animation: overlay-in 0.12s ease;
+}
+
+.modal {
+  width: 100%;
+  max-width: 400px;
+  margin: 0;
+  gap: 1.25rem;
+  background: var(--card-solid);
+  animation: modal-in 0.15s ease;
+}
+
+.modal-message {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.danger-btn {
+  background: linear-gradient(135deg, #e23a52, #b3243a);
+  box-shadow: 0 10px 22px -10px rgba(210, 59, 78, 0.8);
+}
+
+.danger-btn:hover:not(:disabled) {
+  box-shadow: 0 14px 26px -10px rgba(210, 59, 78, 0.85);
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
 }
 
 button.link.more {

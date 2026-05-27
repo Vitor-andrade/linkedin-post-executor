@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { ConfirmDialog, type ConfirmRequest } from "./ConfirmDialog";
 
 interface Health {
   status: string;
@@ -74,6 +75,17 @@ export default function App() {
   const [suggestions, setSuggestions] = useState<Idea[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingIdeas, setLoadingIdeas] = useState(false);
+  const [confirmReq, setConfirmReq] = useState<ConfirmRequest | null>(null);
+
+  // confirm shows the modal and resolves to the user's choice, replacing the
+  // native window.confirm for a consistent look.
+  const confirm = useCallback(
+    (opts: Omit<ConfirmRequest, "resolve">) =>
+      new Promise<boolean>((resolve) => {
+        setConfirmReq({ ...opts, resolve });
+      }),
+    [],
+  );
 
   const loadDrafts = useCallback(async () => {
     try {
@@ -252,12 +264,25 @@ export default function App() {
   }
 
   async function cancelScheduled(id: number) {
+    const ok = await confirm({
+      message: "Cancel this scheduled post?",
+      confirmLabel: "Cancel post",
+      danger: true,
+    });
+    if (!ok) return;
     await fetch(`/api/schedule/${id}`, { method: "DELETE" });
     await loadScheduled();
     await loadMetrics();
   }
 
   async function disconnect() {
+    const ok = await confirm({
+      message:
+        "Disconnect LinkedIn? You'll need to authorize again to publish or schedule.",
+      confirmLabel: "Disconnect",
+      danger: true,
+    });
+    if (!ok) return;
     await fetch("/api/linkedin/disconnect", { method: "POST" });
     setNotice("LinkedIn disconnected");
     await loadLinkedIn();
@@ -324,7 +349,12 @@ export default function App() {
   }
 
   async function deleteDraft(id: number) {
-    if (!window.confirm("Delete this draft? This cannot be undone.")) return;
+    const ok = await confirm({
+      message: "Delete this draft? This cannot be undone.",
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!ok) return;
     try {
       const res = await fetch(`/api/drafts/${id}`, { method: "DELETE" });
       if (!res.ok) {
@@ -593,6 +623,16 @@ export default function App() {
           </button>
         </aside>
       </div>
+
+      {confirmReq && (
+        <ConfirmDialog
+          request={confirmReq}
+          onClose={(ok) => {
+            confirmReq.resolve(ok);
+            setConfirmReq(null);
+          }}
+        />
+      )}
     </div>
   );
 }
