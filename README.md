@@ -54,10 +54,16 @@ directly to **your** profile. No spreadsheets, no manual copy-paste, no monthly 
   (𝗯𝗼𝗹𝗱, 𝘪𝘵𝘢𝘭𝘪𝘤), separators and lists that render directly in the editor, without Markdown.
 - ✍️ **Manual editing, always in control** — every generated text is an editable draft.
   AI is a starting point, not the final word.
-- 📅 **Scheduling** — pick a date and time; the tool publishes for you at the right moment.
+- 🗂 **Draft management** — save, list, reopen, edit and delete drafts, all stored locally.
+- 📅 **Scheduling** — pick a date and time; a background worker publishes for you at the right
+  moment, retrying transient failures with exponential backoff.
 - 🚀 **Direct publishing** — official integration via LinkedIn OAuth, to your own profile.
 - 🔌 **AI your way** — works _for free_ with a local model (Ollama) or a free Gemini key, or
   connect your own key (Claude, OpenAI) if you prefer.
+- 📊 **Local metrics** — drafts, scheduled, published and last-publish counts, derived entirely
+  from your own data (no telemetry).
+- 🎨 **Modern UI** — a clean gradient interface with light/dark support and in-app confirmation
+  dialogs for anything irreversible.
 
 ---
 
@@ -172,6 +178,34 @@ The project evolves in vertical slices — each one delivers end-to-end value.
 
 ## 🚀 Running locally
 
+### Quick start (step by step)
+
+```bash
+# 1. Clone and enter the project
+git clone https://github.com/Vitor-andrade/linkedin-post-executor.git
+cd linkedin-post-executor
+
+# 2. (optional) free local AI — install Ollama from https://ollama.com, then:
+ollama pull llama3.1
+
+# 3. (optional) configure credentials — copy the template and edit as needed
+cp .env.example .env
+
+# 4. Build the UI + single binary and run it
+make build
+make run
+
+# 5. Open the app
+#    → http://localhost:8080
+```
+
+That's the whole install. Steps 2 and 3 are optional: without Ollama you can still write/edit
+posts manually or use a cloud key (see [AI providers](#-ai-providers)); without LinkedIn
+credentials everything works except publishing/scheduling.
+
+To publish to LinkedIn, do the one-time setup in
+[Publishing to LinkedIn](#-publishing-to-linkedin), then click **Connect LinkedIn** in the app.
+
 ### Prerequisites
 
 | Tool | What for | Required? |
@@ -223,7 +257,8 @@ The app talks to Ollama at `http://localhost:11434` by default.
 
 ### Configuration
 
-Every variable has a default; copy `.env.example` to `.env` only if you want to tweak something:
+Every variable has a default. Copy `.env.example` to `.env` and edit what you need — the file is
+loaded automatically at startup (real environment variables take precedence over it):
 
 ```bash
 cp .env.example .env
@@ -278,8 +313,13 @@ The active provider is shown in the app header (e.g. `AI: gemini (gemini-2.0-fla
 Publishing uses **your own** LinkedIn app (bring your own credentials), so the project needs no
 partner approval and never posts on behalf of anyone else.
 
+> **Posts go to your personal profile**, not to a Company Page. The page below is required only to
+> *create* the developer app (LinkedIn's rule) — a placeholder page is fine and nothing is posted
+> to it. Posting to a Company Page would need different scopes and partner approval, which this
+> project intentionally avoids.
+
 1. Go to [LinkedIn Developers](https://www.linkedin.com/developers/apps) and **create an app**
-   (it must be associated with a Company Page you manage — a placeholder page is fine).
+   (it must be associated with a Company Page you manage — create a quick placeholder one if needed).
 2. On the **Products** tab, request **“Share on LinkedIn”** and
    **“Sign In with LinkedIn using OpenID Connect”**. These grant the
    `openid`, `profile` and `w_member_social` scopes.
@@ -293,8 +333,12 @@ partner approval and never posts on behalf of anyone else.
    LPE_LINKEDIN_CLIENT_ID=your-client-id
    LPE_LINKEDIN_CLIENT_SECRET=your-client-secret
    ```
-5. Start the app, click **Connect LinkedIn**, and authorize. You can then **Publish to LinkedIn**
-   immediately or **Schedule** a post for later.
+5. Start the app with `make run`, open **http://localhost:8080**, click **Connect LinkedIn**, and
+   authorize. You can then **Publish to LinkedIn** immediately or **Schedule** a post for later.
+
+> ⚠️ Use the single-binary mode (`make run`, port **8080**) to connect LinkedIn — the OAuth
+> callback is served on `8080`, so the round-trip lands there. The dev server (port 5173) is for
+> UI iteration only.
 
 > 🔐 **Token security:** OAuth tokens are encrypted at rest (AES-256-GCM) with a key auto-generated
 > on first run and stored with `0600` permissions (`LPE_KEY_FILE`). Scheduled posts that fail (e.g.
