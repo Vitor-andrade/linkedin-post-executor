@@ -210,6 +210,11 @@ export default function App() {
   }
 
   async function publishNow() {
+    const ok = await confirm({
+      message: "Publish this post to your LinkedIn profile now? This can't be undone.",
+      confirmLabel: "Publish",
+    });
+    if (!ok) return;
     setPublishing(true);
     setError("");
     setNotice("");
@@ -236,6 +241,11 @@ export default function App() {
       setError("Pick a date and time to schedule.");
       return;
     }
+    const ok = await confirm({
+      message: `Schedule this post for ${new Date(scheduledFor).toLocaleString()}?`,
+      confirmLabel: "Schedule",
+    });
+    if (!ok) return;
     setScheduling(true);
     setError("");
     setNotice("");
