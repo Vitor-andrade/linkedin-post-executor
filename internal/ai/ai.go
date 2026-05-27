@@ -22,9 +22,9 @@ type Provider interface {
 	Name() string
 	// Generate returns a copy-paste-ready LinkedIn post.
 	Generate(ctx context.Context, req GenerateRequest) (string, error)
-	// Suggest returns short post-topic ideas for a category and/or a specific
-	// technology query.
-	Suggest(ctx context.Context, category, query string) ([]string, error)
+	// Suggest returns post ideas (title + description) for a category and/or a
+	// specific technology query.
+	Suggest(ctx context.Context, category, query string) ([]Idea, error)
 }
 
 // NewFromEnv selects a provider based on LPE_AI_PROVIDER, defaulting to the

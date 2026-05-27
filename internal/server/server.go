@@ -34,6 +34,7 @@ func New(d Deps) http.Handler {
 	mux.HandleFunc("POST /api/drafts", handleCreateDraft(d))
 	mux.HandleFunc("GET /api/drafts/{id}", handleGetDraft(d))
 	mux.HandleFunc("PUT /api/drafts/{id}", handleUpdateDraft(d))
+	mux.HandleFunc("DELETE /api/drafts/{id}", handleDeleteDraft(d))
 
 	mux.HandleFunc("GET /api/linkedin/status", handleLinkedInStatus(d))
 	mux.HandleFunc("GET /api/linkedin/login", handleLinkedInLogin(d))

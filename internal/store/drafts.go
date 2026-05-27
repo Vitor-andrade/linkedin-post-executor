@@ -68,6 +68,24 @@ func (s *Store) UpdateDraft(ctx context.Context, id int64, d Draft) (Draft, erro
 	return s.GetDraft(ctx, id)
 }
 
+// DeleteDraft removes a draft. Related draft_versions cascade and any
+// scheduled_posts referencing it keep their content (draft_id is set to NULL).
+// It returns sql.ErrNoRows if no draft has that id.
+func (s *Store) DeleteDraft(ctx context.Context, id int64) error {
+	res, err := s.db.ExecContext(ctx, `DELETE FROM drafts WHERE id = ?`, id)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
 // SetDraftStatus updates only the lifecycle status of a draft (e.g. marking it
 // "published" after a successful LinkedIn post).
 func (s *Store) SetDraftStatus(ctx context.Context, id int64, status string) error {

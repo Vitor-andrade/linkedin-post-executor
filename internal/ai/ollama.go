@@ -48,7 +48,7 @@ func (o *Ollama) Generate(ctx context.Context, req GenerateRequest) (string, err
 }
 
 // Suggest implements Provider, producing post-topic ideas.
-func (o *Ollama) Suggest(ctx context.Context, category, query string) ([]string, error) {
+func (o *Ollama) Suggest(ctx context.Context, category, query string) ([]Idea, error) {
 	return suggestVia(ctx, o, category, query)
 }
 

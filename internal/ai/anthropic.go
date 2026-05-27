@@ -56,7 +56,7 @@ func (a *Anthropic) Generate(ctx context.Context, req GenerateRequest) (string, 
 }
 
 // Suggest implements Provider, producing post-topic ideas.
-func (a *Anthropic) Suggest(ctx context.Context, category, query string) ([]string, error) {
+func (a *Anthropic) Suggest(ctx context.Context, category, query string) ([]Idea, error) {
 	return suggestVia(ctx, a, category, query)
 }
 

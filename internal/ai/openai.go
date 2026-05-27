@@ -53,7 +53,7 @@ func (o *OpenAI) Generate(ctx context.Context, req GenerateRequest) (string, err
 }
 
 // Suggest implements Provider, producing post-topic ideas.
-func (o *OpenAI) Suggest(ctx context.Context, category, query string) ([]string, error) {
+func (o *OpenAI) Suggest(ctx context.Context, category, query string) ([]Idea, error) {
 	return suggestVia(ctx, o, category, query)
 }
 

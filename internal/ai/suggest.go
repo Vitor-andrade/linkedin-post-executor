@@ -5,64 +5,71 @@ import (
 	"strings"
 )
 
-// Category groups curated post-topic ideas shown instantly in the UI (offline,
-// zero cost). The AI can extend a category on demand via Suggest.
-type Category struct {
-	Name   string   `json:"name"`
-	Topics []string `json:"topics"`
+// Idea is a post suggestion: a topic title plus a short context the user can
+// expand on. Both seed the generation form when picked.
+type Idea struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
-// curatedCatalog is the built-in seed list. Topics are post *angles* a
+// Category groups curated post ideas shown instantly in the UI (offline, zero
+// cost). The AI can extend a category on demand via Suggest.
+type Category struct {
+	Name  string `json:"name"`
+	Ideas []Idea `json:"ideas"`
+}
+
+// curatedCatalog is the built-in seed list. Each idea is a post angle a
 // developer can expand on, written in English to match the generated posts.
 var curatedCatalog = []Category{
-	{Name: "Frontend", Topics: []string{
-		"A rendering pattern that finally made my React app fast",
-		"Why I stopped reaching for a state library on small apps",
-		"Accessibility wins that took 10 minutes and mattered",
-		"The CSS feature I wish I'd learned years earlier",
-		"What a design system actually saves a small team",
+	{Name: "Frontend", Ideas: []Idea{
+		{"A rendering pattern that finally made my React app fast", "Walk through the bottleneck, the fix, and the measured before/after."},
+		{"Why I stopped reaching for a state library on small apps", "Show what built-in tools covered and when a library would still pay off."},
+		{"Accessibility wins that took 10 minutes and mattered", "List small, concrete changes and the impact on real users."},
+		{"The CSS feature I wish I'd learned years earlier", "Explain the feature, a practical example, and what it replaced."},
+		{"What a design system actually saves a small team", "Contrast life before/after, with honest trade-offs."},
 	}},
-	{Name: "Backend", Topics: []string{
-		"A bug that taught me how timeouts really propagate",
-		"When I chose a boring database and never regretted it",
-		"The API design mistake I keep seeing in code reviews",
-		"How I think about idempotency in payment flows",
-		"Lessons from migrating a monolith one slice at a time",
+	{Name: "Backend", Ideas: []Idea{
+		{"A bug that taught me how timeouts really propagate", "Tell the incident story and the mental model you kept."},
+		{"When I chose a boring database and never regretted it", "Explain the decision, the pressure to over-engineer, and the outcome."},
+		{"The API design mistake I keep seeing in code reviews", "Describe the anti-pattern, why it hurts, and the cleaner shape."},
+		{"How I think about idempotency in payment flows", "Share the rule of thumb and a failure it prevented."},
+		{"Lessons from migrating a monolith one slice at a time", "Outline the strategy, the first slice, and what you'd do differently."},
 	}},
-	{Name: "Databases", Topics: []string{
-		"The index that turned a 4s query into 40ms",
-		"Why I default to SQLite for local-first tools",
-		"N+1 queries: how I spot and kill them",
-		"What I learned the hard way about migrations in production",
-		"Normalization vs. denormalization: a real trade-off I faced",
+	{Name: "Databases", Ideas: []Idea{
+		{"The index that turned a 4s query into 40ms", "Show the query, the plan, and the one change that fixed it."},
+		{"Why I default to SQLite for local-first tools", "Cover the trade-offs and where it stops being the right call."},
+		{"N+1 queries: how I spot and kill them", "Give the symptom, the detection trick, and the fix."},
+		{"What I learned the hard way about migrations in production", "Tell the near-miss and the checklist you now follow."},
+		{"Normalization vs. denormalization: a real trade-off I faced", "Describe the case and how you decided."},
 	}},
-	{Name: "DevOps", Topics: []string{
-		"The CI step that catches the most bugs for the least effort",
-		"How a single binary simplified my whole deployment",
-		"What I monitor first when something feels slow",
-		"The infra cost I cut without anyone noticing",
-		"Why I keep my Dockerfiles boring on purpose",
+	{Name: "DevOps", Ideas: []Idea{
+		{"The CI step that catches the most bugs for the least effort", "Name the check and quantify what it saves."},
+		{"How a single binary simplified my whole deployment", "Contrast the old pipeline with the new one."},
+		{"What I monitor first when something feels slow", "Share your triage order and why."},
+		{"The infra cost I cut without anyone noticing", "Explain the waste you found and how you removed it safely."},
+		{"Why I keep my Dockerfiles boring on purpose", "List the boring choices and the bugs they avoid."},
 	}},
-	{Name: "Security", Topics: []string{
-		"How I store secrets so they never hit the repo",
-		"Encrypting tokens at rest: a pattern I now use everywhere",
-		"The OAuth detail that trips up most first integrations",
-		"A threat model I sketch before writing any auth code",
-		"Why least privilege saved me during an incident",
+	{Name: "Security", Ideas: []Idea{
+		{"How I store secrets so they never hit the repo", "Walk through the setup and the failure mode it prevents."},
+		{"Encrypting tokens at rest: a pattern I now use everywhere", "Explain the approach in plain terms and when it matters."},
+		{"The OAuth detail that trips up most first integrations", "Pinpoint the gotcha and the fix."},
+		{"A threat model I sketch before writing any auth code", "Show the few questions you always ask."},
+		{"Why least privilege saved me during an incident", "Tell the story and the principle it reinforced."},
 	}},
-	{Name: "AI / ML", Topics: []string{
-		"Running models locally: what changed in my workflow",
-		"How I keep AI features cheap with a pluggable provider",
-		"Prompting lessons from shipping an AI feature",
-		"When a smaller model was the right call",
-		"Guardrails I add before letting an LLM touch user data",
+	{Name: "AI / ML", Ideas: []Idea{
+		{"Running models locally: what changed in my workflow", "Compare cost, privacy, and speed before/after."},
+		{"How I keep AI features cheap with a pluggable provider", "Explain the abstraction and the free-by-default choice."},
+		{"Prompting lessons from shipping an AI feature", "Share 3 concrete prompt changes that improved output."},
+		{"When a smaller model was the right call", "Describe the task and why bigger wasn't better."},
+		{"Guardrails I add before letting an LLM touch user data", "List the checks and the risk each removes."},
 	}},
-	{Name: "Career", Topics: []string{
-		"The habit that made me a better code reviewer",
-		"What I'd tell my junior self about scope",
-		"How writing in public changed my engineering career",
-		"Saying no to work: a skill I had to learn",
-		"The side project that taught me more than any course",
+	{Name: "Career", Ideas: []Idea{
+		{"The habit that made me a better code reviewer", "Describe the habit and a review it improved."},
+		{"What I'd tell my junior self about scope", "Share the lesson and a project where it mattered."},
+		{"How writing in public changed my engineering career", "Tell what you wrote, what happened, and what you'd start today."},
+		{"Saying no to work: a skill I had to learn", "Give a concrete example and the framing that helped."},
+		{"The side project that taught me more than any course", "Explain what it was and the specific skills it built."},
 	}},
 }
 
@@ -75,11 +82,14 @@ type completer interface {
 	complete(ctx context.Context, system, user string) (string, error)
 }
 
-const suggestionSystemPrompt = `You generate concise LinkedIn post TOPIC IDEAS for software developers — not full posts.
+// ideaSeparator splits the title from the description in each suggestion line.
+const ideaSeparator = "::"
+
+const suggestionSystemPrompt = `You generate concise LinkedIn post IDEAS for software developers — not full posts.
 Rules:
 - Return exactly 6 ideas.
-- One idea per line, no numbering, no bullets, no Markdown.
-- Each idea is a punchy, specific angle the author can expand into a post.
+- One idea per line, formatted as: <punchy title> :: <one-sentence angle/context>
+- No numbering, no bullets, no Markdown.
 - Write in English.
 Respond ONLY with the 6 lines.`
 
@@ -95,9 +105,8 @@ func buildSuggestionPrompt(category, query string) string {
 	return b.String()
 }
 
-// suggestVia produces topic ideas through any completer and parses them into a
-// clean list.
-func suggestVia(ctx context.Context, c completer, category, query string) ([]string, error) {
+// suggestVia produces ideas through any completer and parses them.
+func suggestVia(ctx context.Context, c completer, category, query string) ([]Idea, error) {
 	out, err := c.complete(ctx, suggestionSystemPrompt, buildSuggestionPrompt(category, query))
 	if err != nil {
 		return nil, err
@@ -105,17 +114,22 @@ func suggestVia(ctx context.Context, c completer, category, query string) ([]str
 	return parseSuggestions(out), nil
 }
 
-// parseSuggestions turns a raw multi-line completion into trimmed idea strings,
-// stripping common list prefixes the model might add despite instructions.
-func parseSuggestions(raw string) []string {
-	var ideas []string
+// parseSuggestions turns a raw multi-line completion into ideas, stripping list
+// prefixes and splitting each line into title and description.
+func parseSuggestions(raw string) []Idea {
+	var ideas []Idea
 	for _, line := range strings.Split(raw, "\n") {
 		s := strings.TrimSpace(line)
 		s = strings.TrimLeft(s, "-*•0123456789. )")
 		s = strings.TrimSpace(s)
-		if s != "" {
-			ideas = append(ideas, s)
+		if s == "" {
+			continue
 		}
+		title, desc, _ := strings.Cut(s, ideaSeparator)
+		ideas = append(ideas, Idea{
+			Title:       strings.TrimSpace(title),
+			Description: strings.TrimSpace(desc),
+		})
 	}
 	return ideas
 }

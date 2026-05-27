@@ -58,7 +58,7 @@ func (g *Gemini) Generate(ctx context.Context, req GenerateRequest) (string, err
 }
 
 // Suggest implements Provider, producing post-topic ideas.
-func (g *Gemini) Suggest(ctx context.Context, category, query string) ([]string, error) {
+func (g *Gemini) Suggest(ctx context.Context, category, query string) ([]Idea, error) {
 	return suggestVia(ctx, g, category, query)
 }
 

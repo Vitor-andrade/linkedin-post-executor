@@ -136,6 +136,25 @@ func handleUpdateDraft(d Deps) http.HandlerFunc {
 	}
 }
 
+func handleDeleteDraft(d Deps) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, ok := pathID(w, r)
+		if !ok {
+			return
+		}
+		err := d.Store.DeleteDraft(r.Context(), id)
+		if errors.Is(err, sql.ErrNoRows) {
+			writeError(w, http.StatusNotFound, "draft not found")
+			return
+		}
+		if err != nil {
+			writeError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]string{"status": "deleted"})
+	}
+}
+
 // pathID parses the {id} path value, writing a 400 and returning false if it
 // is missing or not a positive integer.
 func pathID(w http.ResponseWriter, r *http.Request) (int64, bool) {

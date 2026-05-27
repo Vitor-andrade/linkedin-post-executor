@@ -29,9 +29,14 @@ interface Metrics {
   lastPublishedAt?: string;
 }
 
+interface Idea {
+  title: string;
+  description: string;
+}
+
 interface Category {
   name: string;
-  topics: string[];
+  ideas: Idea[];
 }
 
 interface ScheduledPost {
@@ -66,7 +71,7 @@ export default function App() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategory, setActiveCategory] = useState("");
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<Idea[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingIdeas, setLoadingIdeas] = useState(false);
 
@@ -118,7 +123,7 @@ export default function App() {
       setCategories(cats);
       if (cats.length > 0) {
         setActiveCategory(cats[0].name);
-        setSuggestions(cats[0].topics);
+        setSuggestions(cats[0].ideas);
       }
     } catch {
       /* ignore */
@@ -260,7 +265,7 @@ export default function App() {
 
   function selectCategory(cat: Category) {
     setActiveCategory(cat.name);
-    setSuggestions(cat.topics);
+    setSuggestions(cat.ideas);
     setSearchQuery("");
   }
 
@@ -275,10 +280,14 @@ export default function App() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to get ideas");
-      // Prepend the fresh ideas, keeping the list unique.
-      setSuggestions((prev) => [
-        ...new Set([...(data.suggestions ?? []), ...prev]),
-      ]);
+      // Prepend the fresh ideas, keeping the list unique by title.
+      setSuggestions((prev) => {
+        const merged = [...(data.suggestions ?? []), ...prev] as Idea[];
+        const seen = new Set<string>();
+        return merged.filter((i) =>
+          seen.has(i.title) ? false : (seen.add(i.title), true),
+        );
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -291,8 +300,9 @@ export default function App() {
     if (searchQuery.trim()) void generateIdeas(searchQuery.trim());
   }
 
-  function pickSuggestion(text: string) {
-    setTitle(text);
+  function pickSuggestion(idea: Idea) {
+    setTitle(idea.title);
+    setDescription(idea.description);
     setError("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -311,6 +321,22 @@ export default function App() {
     setContent("");
     setEditingId(null);
     setError("");
+  }
+
+  async function deleteDraft(id: number) {
+    if (!window.confirm("Delete this draft? This cannot be undone.")) return;
+    try {
+      const res = await fetch(`/api/drafts/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error ?? "Failed to delete draft");
+      }
+      if (editingId === id) newDraft();
+      await loadDrafts();
+      await loadMetrics();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
   }
 
   return (
@@ -498,9 +524,18 @@ export default function App() {
           <ul className="drafts">
             {drafts.map((d) => (
               <li key={d.id}>
-                <button className="link" onClick={() => loadDraft(d)}>
-                  {d.title || "(untitled)"}
-                </button>
+                <span className="draft-line">
+                  <button className="link" onClick={() => loadDraft(d)}>
+                    {d.title || "(untitled)"}
+                  </button>
+                  <button
+                    className="link danger"
+                    onClick={() => deleteDraft(d.id)}
+                    title="Delete draft"
+                  >
+                    delete
+                  </button>
+                </span>
                 <span className="meta">
                   {new Date(d.createdAt).toLocaleString()} · {d.status}
                 </span>
@@ -538,9 +573,12 @@ export default function App() {
 
           <ul className="suggestions">
             {suggestions.map((s, i) => (
-              <li key={`${s}-${i}`}>
+              <li key={`${s.title}-${i}`}>
                 <button className="suggestion" onClick={() => pickSuggestion(s)}>
-                  {s}
+                  <span className="suggestion-title">{s.title}</span>
+                  {s.description && (
+                    <span className="suggestion-desc">{s.description}</span>
+                  )}
                 </button>
               </li>
             ))}
