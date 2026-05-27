@@ -163,7 +163,7 @@ The project evolves in vertical slices — each one delivers end-to-end value.
 - [x] **Slice 2 — Publish** — LinkedIn OAuth + immediate publishing to your own profile.
 - [x] **Slice 3 — Schedule** — scheduling with the background scheduler (retries failed posts with exponential backoff).
 - [x] **Polish** — bring-your-own-key support (Gemini, Claude, OpenAI) and local metrics.
-- [ ] **Release** — cross-platform binaries and a Docker image.
+- [ ] **Release** — cross-platform binaries and a Docker image. _(deferred — see [`docs/TODO.md`](docs/TODO.md); personal/local use for now)_
 
 ---
 
