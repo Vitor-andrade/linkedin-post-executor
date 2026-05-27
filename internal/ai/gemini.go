@@ -52,15 +52,25 @@ type geminiResponse struct {
 	} `json:"error"`
 }
 
-// Generate implements Provider by calling Gemini's generateContent endpoint.
+// Generate implements Provider, producing a full LinkedIn post.
 func (g *Gemini) Generate(ctx context.Context, req GenerateRequest) (string, error) {
+	return g.complete(ctx, systemPrompt, buildPrompt(req))
+}
+
+// Suggest implements Provider, producing post-topic ideas.
+func (g *Gemini) Suggest(ctx context.Context, category, query string) ([]string, error) {
+	return suggestVia(ctx, g, category, query)
+}
+
+// complete performs a single system+user completion via generateContent.
+func (g *Gemini) complete(ctx context.Context, system, user string) (string, error) {
 	if g.apiKey == "" {
 		return "", errors.New("Gemini API key missing: set LPE_GEMINI_API_KEY")
 	}
 
 	body, err := json.Marshal(geminiRequest{
-		SystemInstruction: geminiContent{Parts: []geminiPart{{Text: systemPrompt}}},
-		Contents:          []geminiContent{{Parts: []geminiPart{{Text: buildPrompt(req)}}}},
+		SystemInstruction: geminiContent{Parts: []geminiPart{{Text: system}}},
+		Contents:          []geminiContent{{Parts: []geminiPart{{Text: user}}}},
 	})
 	if err != nil {
 		return "", err

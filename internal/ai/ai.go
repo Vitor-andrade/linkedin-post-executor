@@ -15,12 +15,16 @@ type GenerateRequest struct {
 	Description string `json:"description"`
 }
 
-// Provider generates a formatted LinkedIn post from a seed.
+// Provider generates a formatted LinkedIn post from a seed and can suggest
+// post ideas.
 type Provider interface {
 	// Name identifies the provider (e.g. "ollama").
 	Name() string
 	// Generate returns a copy-paste-ready LinkedIn post.
 	Generate(ctx context.Context, req GenerateRequest) (string, error)
+	// Suggest returns short post-topic ideas for a category and/or a specific
+	// technology query.
+	Suggest(ctx context.Context, category, query string) ([]string, error)
 }
 
 // NewFromEnv selects a provider based on LPE_AI_PROVIDER, defaulting to the

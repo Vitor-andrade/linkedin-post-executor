@@ -29,6 +29,11 @@ interface Metrics {
   lastPublishedAt?: string;
 }
 
+interface Category {
+  name: string;
+  topics: string[];
+}
+
 interface ScheduledPost {
   id: number;
   draftId: number | null;
@@ -59,6 +64,11 @@ export default function App() {
   const [scheduling, setScheduling] = useState(false);
   const [scheduled, setScheduled] = useState<ScheduledPost[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [activeCategory, setActiveCategory] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loadingIdeas, setLoadingIdeas] = useState(false);
 
   const loadDrafts = useCallback(async () => {
     try {
@@ -100,6 +110,21 @@ export default function App() {
     }
   }, []);
 
+  const loadCategories = useCallback(async () => {
+    try {
+      const res = await fetch("/api/suggestions");
+      if (!res.ok) return;
+      const cats: Category[] = await res.json();
+      setCategories(cats);
+      if (cats.length > 0) {
+        setActiveCategory(cats[0].name);
+        setSuggestions(cats[0].topics);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   useEffect(() => {
     fetch("/api/health")
       .then((r) => r.json())
@@ -109,6 +134,7 @@ export default function App() {
     void loadLinkedIn();
     void loadScheduled();
     void loadMetrics();
+    void loadCategories();
 
     // Surface the result of the OAuth callback redirect, then clean the URL.
     const params = new URLSearchParams(window.location.search);
@@ -116,7 +142,7 @@ export default function App() {
     if (li === "connected") setNotice("LinkedIn connected ✅");
     else if (li === "error") setError("LinkedIn connection failed. Please try again.");
     if (li) window.history.replaceState({}, "", window.location.pathname);
-  }, [loadDrafts, loadLinkedIn, loadScheduled, loadMetrics]);
+  }, [loadDrafts, loadLinkedIn, loadScheduled, loadMetrics, loadCategories]);
 
   async function generate(e: React.FormEvent) {
     e.preventDefault();
@@ -232,6 +258,45 @@ export default function App() {
     await loadLinkedIn();
   }
 
+  function selectCategory(cat: Category) {
+    setActiveCategory(cat.name);
+    setSuggestions(cat.topics);
+    setSearchQuery("");
+  }
+
+  async function generateIdeas(query: string) {
+    setLoadingIdeas(true);
+    setError("");
+    try {
+      const res = await fetch("/api/suggestions/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: activeCategory, query }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to get ideas");
+      // Prepend the fresh ideas, keeping the list unique.
+      setSuggestions((prev) => [
+        ...new Set([...(data.suggestions ?? []), ...prev]),
+      ]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoadingIdeas(false);
+    }
+  }
+
+  function searchIdeas(e: React.FormEvent) {
+    e.preventDefault();
+    if (searchQuery.trim()) void generateIdeas(searchQuery.trim());
+  }
+
+  function pickSuggestion(text: string) {
+    setTitle(text);
+    setError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   function loadDraft(d: Draft) {
     setTitle(d.title);
     setDescription(d.sourceDescription);
@@ -249,7 +314,7 @@ export default function App() {
   }
 
   return (
-    <main className="container">
+    <div className="container">
       <header>
         <h1>LinkedIn Post Executor</h1>
         <span className={`badge ${health ? "ok" : "down"}`}>
@@ -257,7 +322,9 @@ export default function App() {
         </span>
       </header>
 
-      <section className="linkedin">
+      <div className="layout">
+        <main className="main-col">
+          <section className="linkedin">
         {linkedin?.connected ? (
           <>
             <span className="badge ok">LinkedIn connected</span>
@@ -442,6 +509,52 @@ export default function App() {
           </ul>
         </section>
       )}
-    </main>
+        </main>
+
+        <aside className="suggest card">
+          <h2>Post ideas</h2>
+          <div className="tabs">
+            {categories.map((c) => (
+              <button
+                key={c.name}
+                className={`tab ${c.name === activeCategory ? "active" : ""}`}
+                onClick={() => selectCategory(c)}
+              >
+                {c.name}
+              </button>
+            ))}
+          </div>
+
+          <form onSubmit={searchIdeas} className="suggest-search">
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Specific tech, e.g. Kubernetes"
+            />
+            <button type="submit" disabled={loadingIdeas || !searchQuery.trim()}>
+              {loadingIdeas ? "…" : "Ideas"}
+            </button>
+          </form>
+
+          <ul className="suggestions">
+            {suggestions.map((s, i) => (
+              <li key={`${s}-${i}`}>
+                <button className="suggestion" onClick={() => pickSuggestion(s)}>
+                  {s}
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <button
+            className="link more"
+            onClick={() => generateIdeas(searchQuery.trim())}
+            disabled={loadingIdeas}
+          >
+            {loadingIdeas ? "Thinking…" : "✨ Generate more with AI"}
+          </button>
+        </aside>
+      </div>
+    </div>
   );
 }

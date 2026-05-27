@@ -45,6 +45,9 @@ directly to **your** profile. No spreadsheets, no manual copy-paste, no monthly 
 
 ## ✨ What it does
 
+- 💡 **Post-idea suggestions** — a sidebar with topic ideas by category (frontend, backend,
+  databases, devops, security, AI, career) plus an AI "generate more" for a specific technology;
+  click an idea to seed the title.
 - 📝 **AI-assisted content generation** — give it a title and a short description; the tool
   produces a complete post, with a hook, a scannable body, a CTA and relevant hashtags.
 - 🎨 **Native LinkedIn formatting** — applies bold/italic via Unicode typography

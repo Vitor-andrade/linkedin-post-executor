@@ -50,8 +50,18 @@ type anthropicResponse struct {
 	} `json:"error"`
 }
 
-// Generate implements Provider by calling Claude's Messages API.
+// Generate implements Provider, producing a full LinkedIn post.
 func (a *Anthropic) Generate(ctx context.Context, req GenerateRequest) (string, error) {
+	return a.complete(ctx, systemPrompt, buildPrompt(req))
+}
+
+// Suggest implements Provider, producing post-topic ideas.
+func (a *Anthropic) Suggest(ctx context.Context, category, query string) ([]string, error) {
+	return suggestVia(ctx, a, category, query)
+}
+
+// complete performs a single system+user completion via the Messages API.
+func (a *Anthropic) complete(ctx context.Context, system, user string) (string, error) {
 	if a.apiKey == "" {
 		return "", errors.New("Anthropic API key missing: set LPE_ANTHROPIC_API_KEY")
 	}
@@ -59,8 +69,8 @@ func (a *Anthropic) Generate(ctx context.Context, req GenerateRequest) (string, 
 	body, err := json.Marshal(anthropicRequest{
 		Model:     a.model,
 		MaxTokens: 2048,
-		System:    systemPrompt,
-		Messages:  []anthropicMessage{{Role: "user", Content: buildPrompt(req)}},
+		System:    system,
+		Messages:  []anthropicMessage{{Role: "user", Content: user}},
 	})
 	if err != nil {
 		return "", err

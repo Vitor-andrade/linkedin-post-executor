@@ -47,8 +47,18 @@ type openaiResponse struct {
 	} `json:"error"`
 }
 
-// Generate implements Provider by calling OpenAI's Chat Completions API.
+// Generate implements Provider, producing a full LinkedIn post.
 func (o *OpenAI) Generate(ctx context.Context, req GenerateRequest) (string, error) {
+	return o.complete(ctx, systemPrompt, buildPrompt(req))
+}
+
+// Suggest implements Provider, producing post-topic ideas.
+func (o *OpenAI) Suggest(ctx context.Context, category, query string) ([]string, error) {
+	return suggestVia(ctx, o, category, query)
+}
+
+// complete performs a single system+user completion via Chat Completions.
+func (o *OpenAI) complete(ctx context.Context, system, user string) (string, error) {
 	if o.apiKey == "" {
 		return "", errors.New("OpenAI API key missing: set LPE_OPENAI_API_KEY")
 	}
@@ -56,8 +66,8 @@ func (o *OpenAI) Generate(ctx context.Context, req GenerateRequest) (string, err
 	body, err := json.Marshal(openaiRequest{
 		Model: o.model,
 		Messages: []openaiMessage{
-			{Role: "system", Content: systemPrompt},
-			{Role: "user", Content: buildPrompt(req)},
+			{Role: "system", Content: system},
+			{Role: "user", Content: user},
 		},
 	})
 	if err != nil {

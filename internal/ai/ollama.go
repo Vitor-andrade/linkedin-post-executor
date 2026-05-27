@@ -42,12 +42,23 @@ type ollamaResponse struct {
 	Error    string `json:"error"`
 }
 
-// Generate implements Provider by calling Ollama's /api/generate endpoint.
+// Generate implements Provider, producing a full LinkedIn post.
 func (o *Ollama) Generate(ctx context.Context, req GenerateRequest) (string, error) {
+	return o.complete(ctx, systemPrompt, buildPrompt(req))
+}
+
+// Suggest implements Provider, producing post-topic ideas.
+func (o *Ollama) Suggest(ctx context.Context, category, query string) ([]string, error) {
+	return suggestVia(ctx, o, category, query)
+}
+
+// complete performs a single system+user completion against Ollama's
+// /api/generate endpoint.
+func (o *Ollama) complete(ctx context.Context, system, user string) (string, error) {
 	body, err := json.Marshal(ollamaRequest{
 		Model:  o.model,
-		System: systemPrompt,
-		Prompt: buildPrompt(req),
+		System: system,
+		Prompt: user,
 		Stream: false,
 	})
 	if err != nil {
