@@ -53,8 +53,8 @@ directly to **your** profile. No spreadsheets, no manual copy-paste, no monthly 
   AI is a starting point, not the final word.
 - 📅 **Scheduling** — pick a date and time; the tool publishes for you at the right moment.
 - 🚀 **Direct publishing** — official integration via LinkedIn OAuth, to your own profile.
-- 🔌 **AI your way** — works _for free_ with a local model (Ollama) or, if you prefer higher
-  quality, connect your own API key (Claude, OpenAI).
+- 🔌 **AI your way** — works _for free_ with a local model (Ollama) or a free Gemini key, or
+  connect your own key (Claude, OpenAI) if you prefer.
 
 ---
 
@@ -113,7 +113,7 @@ trends. The full decisions, with trade-offs, are recorded in the
 | **Backend** | **Go** | Compiles into a **single binary** with no runtime dependencies — download and run. Concurrency (goroutines) is ideal for the scheduler that runs in the background. |
 | **Frontend** | **React + Vite** | Modern UI, embedded into the Go binary via `go:embed`. One process serves everything. |
 | **Persistence** | **SQLite** | A database in a single local file. Zero infrastructure, zero cost, portable data. |
-| **AI** | **Ollama (default) + BYO key** | Pluggable layer: free local model by default; connect Claude/OpenAI if you want. |
+| **AI** | **Ollama (default) + BYO key** | Pluggable layer: free local model by default; connect Gemini (free tier), Claude or OpenAI if you want. |
 | **Integration** | **LinkedIn OAuth** (`w_member_social`) | Official publishing to your own profile. |
 
 > 💡 **Distribution:** the end result is a single executable (or a `docker run`). No installing
@@ -142,7 +142,7 @@ trends. The full decisions, with trade-offs, are recorded in the
 ║   │                                                         ║
 ║   ├─ AI Provider (pluggable interface)                      ║
 ║   │     ├── Ollama  (local, free — default)                 ║
-║   │     └── API     (Claude / OpenAI — your key)            ║
+║   │     └── BYO key (Gemini / Claude / OpenAI)              ║
 ║   │                                                         ║
 ║   └─ SQLite  → drafts · scheduled_posts · oauth_tokens      ║
 ║                                                            ║
@@ -159,10 +159,10 @@ flow, deployment) and decision records, see **[`docs/`](docs/)**.
 The project evolves in vertical slices — each one delivers end-to-end value.
 
 - [x] **Foundation** — Go + Vite + SQLite scaffold, CI/CD, project base.
-- [ ] **Slice 1 — Generate** — enter a topic → AI (Ollama) generates → review/edit → save draft. _(API and base UI ready; persisting the generated draft still pending)_
-- [ ] **Slice 2 — Publish** — LinkedIn OAuth + immediate publishing to your own profile.
-- [ ] **Slice 3 — Schedule** — scheduling with the background scheduler.
-- [ ] **Polish** — bring-your-own-key support (Claude/OpenAI), local metrics, UX improvements.
+- [x] **Slice 1 — Generate** — enter a topic → AI generates → review/edit → save, list and edit drafts.
+- [x] **Slice 2 — Publish** — LinkedIn OAuth + immediate publishing to your own profile.
+- [x] **Slice 3 — Schedule** — scheduling with the background scheduler (retries failed posts with exponential backoff).
+- [x] **Polish** — bring-your-own-key support (Gemini, Claude, OpenAI). _(local metrics still to come)_
 - [ ] **Release** — cross-platform binaries and a Docker image.
 
 ---
@@ -178,9 +178,9 @@ The project evolves in vertical slices — each one delivers end-to-end value.
 | [Ollama](https://ollama.com/) | Free local AI (content generation) | Optional¹ |
 | App on [LinkedIn Developers](https://developer.linkedin.com/) | Publish to your profile | Optional² |
 
-> ¹ Only needed to generate content with local AI. Alternatively, bring your own key
-> (Claude/OpenAI) — _in progress_.
-> ² Only needed for automatic publishing — _in progress_.
+> ¹ Only needed to generate content with the default local AI. Alternatively, bring your own key
+> — a **free Gemini** key, or Claude/OpenAI. See [AI providers](#-ai-providers).
+> ² Only needed for publishing and scheduling. See [Publishing to LinkedIn](#-publishing-to-linkedin).
 
 ### Option A — single binary (production)
 
@@ -230,9 +230,73 @@ cp .env.example .env
 |---|---|---|
 | `LPE_ADDR` | `:8080` | Local HTTP address |
 | `LPE_DB` | `data.db` | Path to the SQLite file |
-| `LPE_AI_PROVIDER` | `ollama` | AI provider |
+| `LPE_AI_PROVIDER` | `ollama` | AI provider: `ollama` \| `gemini` \| `anthropic` \| `openai` |
 | `LPE_OLLAMA_URL` | `http://localhost:11434` | Ollama URL |
 | `LPE_OLLAMA_MODEL` | `llama3.1` | Ollama model |
+| `LPE_GEMINI_API_KEY` | — | Gemini key (when provider is `gemini`) |
+| `LPE_GEMINI_MODEL` | `gemini-2.0-flash` | Gemini model |
+| `LPE_ANTHROPIC_API_KEY` | — | Claude key (when provider is `anthropic`) |
+| `LPE_OPENAI_API_KEY` | — | OpenAI key (when provider is `openai`) |
+| `LPE_LINKEDIN_CLIENT_ID` | — | LinkedIn app client ID |
+| `LPE_LINKEDIN_CLIENT_SECRET` | — | LinkedIn app client secret |
+| `LPE_LINKEDIN_REDIRECT_URL` | `http://localhost:8080/api/linkedin/callback` | OAuth redirect (must match the app) |
+| `LPE_KEY_FILE` | OS config dir | File holding the auto-generated token-encryption key |
+
+See `.env.example` for the full list with comments.
+
+---
+
+## 🤖 AI providers
+
+The content generator is pluggable. Pick one with `LPE_AI_PROVIDER`; all of them reuse the same
+LinkedIn-tuned system prompt, so the formatting is identical regardless of the engine.
+
+| Provider | Value | Key | Cost |
+|---|---|---|---|
+| **Ollama** (default) | `ollama` | — | Free, fully local |
+| **Gemini** | `gemini` | `LPE_GEMINI_API_KEY` | **Free tier** |
+| **Claude** | `anthropic` (alias `claude`) | `LPE_ANTHROPIC_API_KEY` | Pay-per-use |
+| **OpenAI** | `openai` | `LPE_OPENAI_API_KEY` | Pay-per-use |
+
+For a free cloud option, grab a Gemini key at
+[aistudio.google.com/apikey](https://aistudio.google.com/apikey) and set:
+
+```bash
+LPE_AI_PROVIDER=gemini
+LPE_GEMINI_API_KEY=your-key
+```
+
+The active provider is shown in the app header (e.g. `AI: gemini (gemini-2.0-flash)`).
+
+---
+
+## 🔗 Publishing to LinkedIn
+
+Publishing uses **your own** LinkedIn app (bring your own credentials), so the project needs no
+partner approval and never posts on behalf of anyone else.
+
+1. Go to [LinkedIn Developers](https://www.linkedin.com/developers/apps) and **create an app**
+   (it must be associated with a Company Page you manage — a placeholder page is fine).
+2. On the **Products** tab, request **“Share on LinkedIn”** and
+   **“Sign In with LinkedIn using OpenID Connect”**. These grant the
+   `openid`, `profile` and `w_member_social` scopes.
+3. On the **Auth** tab, copy the **Client ID** and **Client Secret**, and add this exact
+   **Authorized redirect URL**:
+   ```
+   http://localhost:8080/api/linkedin/callback
+   ```
+4. Put the credentials in your `.env`:
+   ```bash
+   LPE_LINKEDIN_CLIENT_ID=your-client-id
+   LPE_LINKEDIN_CLIENT_SECRET=your-client-secret
+   ```
+5. Start the app, click **Connect LinkedIn**, and authorize. You can then **Publish to LinkedIn**
+   immediately or **Schedule** a post for later.
+
+> 🔐 **Token security:** OAuth tokens are encrypted at rest (AES-256-GCM) with a key auto-generated
+> on first run and stored with `0600` permissions (`LPE_KEY_FILE`). Scheduled posts that fail (e.g.
+> a transient API error) are retried automatically with exponential backoff before being marked
+> failed.
 
 ### Useful commands
 

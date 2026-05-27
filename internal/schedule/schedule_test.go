@@ -60,7 +60,7 @@ func TestTickPublishesDuePost(t *testing.T) {
 	}
 }
 
-func TestTickMarksFailure(t *testing.T) {
+func TestTickRetriesBeforeGivingUp(t *testing.T) {
 	st := newStore(t)
 	ctx := context.Background()
 	due, _ := st.CreateScheduledPost(ctx, store.ScheduledPost{
@@ -69,10 +69,49 @@ func TestTickMarksFailure(t *testing.T) {
 	})
 
 	pub := &fakePublisher{err: errors.New("LinkedIn is not connected")}
-	New(st, pub).tick(ctx)
+	s := New(st, pub)
+
+	// First failure: stays pending, scheduled for a future retry.
+	s.tick(ctx)
+	got, _ := st.GetScheduledPost(ctx, due.ID)
+	if got.Status != "pending" || got.Attempts != 1 {
+		t.Fatalf("after first failure: status=%q attempts=%d", got.Status, got.Attempts)
+	}
+	if got.NextAttemptAt == nil || !got.NextAttemptAt.After(time.Now()) {
+		t.Errorf("expected a future next_attempt_at, got %v", got.NextAttemptAt)
+	}
+	if got.Error == "" {
+		t.Error("expected the last error to be recorded")
+	}
+
+	// The post is no longer due (its retry is in the future), so a second tick
+	// must not increment attempts.
+	s.tick(ctx)
+	if again, _ := st.GetScheduledPost(ctx, due.ID); again.Attempts != 1 {
+		t.Errorf("attempts should not advance while not due, got %d", again.Attempts)
+	}
+}
+
+func TestTickGivesUpAfterMaxAttempts(t *testing.T) {
+	st := newStore(t)
+	ctx := context.Background()
+	due, _ := st.CreateScheduledPost(ctx, store.ScheduledPost{
+		Content:      "x",
+		ScheduledFor: time.Now().Add(-time.Minute),
+	})
+
+	// A scheduler that gives up immediately and retries with no delay so the
+	// post stays due across ticks.
+	pub := &fakePublisher{err: errors.New("boom")}
+	s := New(st, pub)
+	s.maxAttempts = 2
+	s.baseBackoff = 0
+
+	s.tick(ctx) // attempt 1 → retry (next_attempt_at = now)
+	s.tick(ctx) // attempt 2 → reaches max → failed
 
 	got, _ := st.GetScheduledPost(ctx, due.ID)
-	if got.Status != "failed" || got.Error == "" {
-		t.Errorf("expected failed status with error, got %+v", got)
+	if got.Status != "failed" {
+		t.Errorf("expected failed after max attempts, got %q (attempts=%d)", got.Status, got.Attempts)
 	}
 }

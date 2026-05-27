@@ -29,6 +29,8 @@ interface ScheduledPost {
   status: string;
   linkedinUrn: string;
   error: string;
+  attempts: number;
+  nextAttemptAt?: string;
   createdAt: string;
 }
 
@@ -354,6 +356,14 @@ export default function App() {
                   {p.content.slice(0, 80)}
                   {p.content.length > 80 ? "…" : ""}
                 </span>
+                {p.attempts > 0 && p.status === "pending" && (
+                  <span className="meta">
+                    retrying — attempt {p.attempts}
+                    {p.nextAttemptAt
+                      ? ` · next ${new Date(p.nextAttemptAt).toLocaleTimeString()}`
+                      : ""}
+                  </span>
+                )}
                 {p.error && <span className="error">{p.error}</span>}
               </li>
             ))}
