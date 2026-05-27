@@ -52,8 +52,8 @@ directly to **your** profile. No spreadsheets, no manual copy-paste, no monthly 
   produces a complete post, with a hook, a scannable body, a CTA and relevant hashtags.
 - 🎨 **Native LinkedIn formatting** — applies bold/italic via Unicode typography
   (𝗯𝗼𝗹𝗱, 𝘪𝘵𝘢𝘭𝘪𝘤), separators and lists that render directly in the editor, without Markdown.
-- ✍️ **Manual editing, always in control** — every generated text is an editable draft.
-  AI is a starting point, not the final word.
+- ✍️ **Write your way** — toggle **AI assist** off to compose a post entirely by hand, or on to
+  generate a starting point you can edit. Either way you can save, publish or schedule it.
 - 🗂 **Draft management** — save, list, reopen, edit and delete drafts, all stored locally.
 - 📅 **Scheduling** — pick a date and time; a background worker publishes for you at the right
   moment, retrying transient failures with exponential backoff.

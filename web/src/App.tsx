@@ -78,6 +78,7 @@ export default function App() {
   const [confirmReq, setConfirmReq] = useState<ConfirmRequest | null>(null);
   const [images, setImages] = useState<{ id: number; filename: string }[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [aiAssist, setAiAssist] = useState(true);
 
   // confirm shows the modal and resolves to the user's choice, replacing the
   // native window.confirm for a consistent look.
@@ -163,8 +164,7 @@ export default function App() {
     if (li) window.history.replaceState({}, "", window.location.pathname);
   }, [loadDrafts, loadLinkedIn, loadScheduled, loadMetrics, loadCategories]);
 
-  async function generate(e: React.FormEvent) {
-    e.preventDefault();
+  async function generate() {
     setLoading(true);
     setError("");
     try {
@@ -483,35 +483,48 @@ export default function App() {
         </p>
       )}
 
-      <form onSubmit={generate} className="card">
+      <section className="card">
+        <div className="section-head">
+          <h2>Compose</h2>
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={aiAssist}
+              onChange={(e) => setAiAssist(e.target.checked)}
+            />
+            AI assist
+          </label>
+        </div>
         <label>
           Title / Topic
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. 5 lessons I learned scaling an API in Go"
-            required
           />
         </label>
-        <label>
-          Description / Context (optional)
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            placeholder="Details, key points, desired tone..."
-          />
-        </label>
-        <button type="submit" disabled={loading}>
-          {loading ? "Generating..." : "Generate post"}
-        </button>
+        {aiAssist && (
+          <>
+            <label>
+              Description / Context (optional)
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
+                placeholder="Details, key points, desired tone..."
+              />
+            </label>
+            <button onClick={generate} disabled={loading || !title.trim()}>
+              {loading ? "Generating..." : "Generate post"}
+            </button>
+          </>
+        )}
         {error && <p className="error">{error}</p>}
-      </form>
+      </section>
 
-      {content && (
-        <section className="card">
+      <section className="card">
           <div className="section-head">
-            <h2>Generated draft</h2>
+            <h2>Post content</h2>
             <span className="count">{content.length} chars</span>
           </div>
           <textarea
@@ -519,6 +532,7 @@ export default function App() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={16}
+            placeholder="Write your post here, or use AI assist above to generate one…"
           />
 
           <div className="images">
@@ -585,8 +599,7 @@ export default function App() {
               {scheduling ? "Scheduling..." : "Schedule"}
             </button>
           </div>
-        </section>
-      )}
+      </section>
 
       {scheduled.length > 0 && (
         <section className="card">
