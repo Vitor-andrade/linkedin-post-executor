@@ -670,6 +670,38 @@ button.link.danger {
   box-shadow: 0 14px 26px -10px rgba(210, 59, 78, 0.85);
 }
 
+/* ── Alert popup (publish outcome) ───────────────────── */
+.alert-head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.alert-head h2 {
+  margin: 0;
+}
+
+.alert-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.alert-head.success .alert-icon {
+  background: linear-gradient(135deg, #12b76a, #0c8a47);
+}
+
+.alert-head.error .alert-icon {
+  background: linear-gradient(135deg, #e23a52, #b3243a);
+}
+
 @keyframes overlay-in {
   from {
     opacity: 0;

@@ -25,6 +25,7 @@ Formatting rules (MANDATORY):
 - Section separators with ━━━━━━━━━━━━━━━━━━ when they aid readability.
 - No emojis in the body.
 - No URLs in the post body.
+- Avoid using "-" to separate ideas or phrases.
 - End with a clear CTA and, on the LAST line, 5 to 8 relevant hashtags.
 - Ideal length between 1500 and 2500 characters; hard maximum of 3000.
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ConfirmDialog, type ConfirmRequest } from "./ConfirmDialog";
+import { AlertDialog, type AlertRequest } from "./AlertDialog";
 
 interface Health {
   status: string;
@@ -76,6 +77,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingIdeas, setLoadingIdeas] = useState(false);
   const [confirmReq, setConfirmReq] = useState<ConfirmRequest | null>(null);
+  const [alertReq, setAlertReq] = useState<AlertRequest | null>(null);
   const [images, setImages] = useState<{ id: number; filename: string }[]>([]);
   const [uploading, setUploading] = useState(false);
   const [aiAssist, setAiAssist] = useState(true);
@@ -254,12 +256,22 @@ export default function App() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to publish");
-      setNotice(`Published to LinkedIn ✅ (${data.urn})`);
+      setAlertReq({
+        variant: "success",
+        title: "Published to LinkedIn",
+        message: "Your post is now live on your LinkedIn profile.",
+      });
       setImages([]);
       await loadDrafts();
       await loadMetrics();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setAlertReq({
+        variant: "error",
+        title: "Couldn't publish to LinkedIn",
+        message:
+          (err instanceof Error ? err.message : String(err)) +
+          ". Please check your connection and try again.",
+      });
     } finally {
       setPublishing(false);
     }
@@ -713,6 +725,10 @@ export default function App() {
             setConfirmReq(null);
           }}
         />
+      )}
+
+      {alertReq && (
+        <AlertDialog request={alertReq} onClose={() => setAlertReq(null)} />
       )}
     </div>
   );

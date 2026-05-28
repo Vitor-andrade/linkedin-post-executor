@@ -46,8 +46,8 @@ directly to **your** profile. No spreadsheets, no manual copy-paste, no monthly 
 ## ✨ What it does
 
 - 💡 **Post-idea suggestions** — a sidebar with topic ideas by category (frontend, backend,
-  databases, devops, security, AI, career) plus an AI "generate more" for a specific technology;
-  click an idea to seed the title.
+  databases, devops, security, AI, career) plus an AI **"generate more"** that swaps in 6 fresh
+  ideas on each click (for the category or a specific technology); click an idea to seed the title.
 - 📝 **AI-assisted content generation** — give it a title and a short description; the tool
   produces a complete post, with a hook, a scannable body, a CTA and relevant hashtags.
 - 🎨 **Native LinkedIn formatting** — applies bold/italic via Unicode typography
@@ -59,13 +59,14 @@ directly to **your** profile. No spreadsheets, no manual copy-paste, no monthly 
   moment, retrying transient failures with exponential backoff.
 - 🖼 **Images** — attach one or more images (a carousel) when publishing now; they're uploaded to
   LinkedIn with the post.
-- 🚀 **Direct publishing** — official integration via LinkedIn OAuth, to your own profile.
+- 🚀 **Direct publishing** — official integration via LinkedIn OAuth, to your own profile, with a
+  clear success/error popup so you always know whether the post went live.
 - 🔌 **AI your way** — works _for free_ with a local model (Ollama) or a free Gemini key, or
   connect your own key (Claude, OpenAI) if you prefer.
 - 📊 **Local metrics** — drafts, scheduled, published and last-publish counts, derived entirely
   from your own data (no telemetry).
-- 🎨 **Modern UI** — a clean gradient interface with light/dark support and in-app confirmation
-  dialogs for anything irreversible.
+- 🎨 **Modern UI** — a clean gradient interface with light/dark support, in-app confirmation
+  dialogs for anything irreversible, and success/error popups for publish outcomes.
 
 ---
 
