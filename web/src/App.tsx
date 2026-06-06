@@ -261,7 +261,13 @@ export default function App() {
         title: "Published to LinkedIn",
         message: "Your post is now live on your LinkedIn profile.",
       });
+      // Clear all fields so the same post can't be published twice.
+      setTitle("");
+      setDescription("");
+      setContent("");
+      setEditingId(null);
       setImages([]);
+      setScheduledFor("");
       await loadDrafts();
       await loadMetrics();
     } catch (err) {
