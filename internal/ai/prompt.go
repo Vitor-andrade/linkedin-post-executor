@@ -22,7 +22,6 @@ Formatting rules (MANDATORY):
 - Text must be as real as possible, not generic situations.
 - Try to avoid mainstream topics when possible.
 - Use ◈ or ↳ for list items when it helps.
-- Section separators with ━━━━━━━━━━━━━━━━━━ when they aid readability.
 - No emojis in the body.
 - No URLs in the post body.
 - Avoid using "-" to separate ideas or phrases.
